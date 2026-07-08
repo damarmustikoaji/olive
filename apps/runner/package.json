@@ -1,0 +1,24 @@
+{
+  "name": "@ai-workforce/runner",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js",
+    "seed:prompts": "node dist/seed-prompts.js"
+  },
+  "dependencies": {
+    "@ai-workforce/core": "workspace:*",
+    "@ai-workforce/shared": "workspace:*",
+    "@ai-workforce/db": "workspace:*",
+    "@ai-workforce/ai-provider": "workspace:*",
+    "@ai-workforce/integration-github": "workspace:*",
+    "@ai-workforce/workflow-release-to-content": "workspace:*",
+    "@ai-workforce/agent-marketing-content-writer": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
