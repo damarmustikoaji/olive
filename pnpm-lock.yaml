@@ -60,6 +60,9 @@ importers:
       '@ai-workforce/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@ai-workforce/integration-x-twitter':
+        specifier: workspace:*
+        version: link:../../packages/integrations/x-twitter
       '@ai-workforce/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -152,6 +155,19 @@ importers:
       '@ai-workforce/shared':
         specifier: workspace:*
         version: link:../../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/integrations/x-twitter:
+    dependencies:
+      '@ai-workforce/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      oauth-1.0a:
+        specifier: ^2.2.6
+        version: 2.2.6
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -571,6 +587,9 @@ packages:
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
+
+  oauth-1.0a@2.2.6:
+    resolution: {integrity: sha512-6bkxv3N4Gu5lty4viIcIAnq5GbxECviMBeKR3WX/q87SPQ8E8aursPZUtsXDnxCs787af09WPRBLqYrf/lwoYQ==}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -1094,6 +1113,8 @@ snapshots:
   node-releases@2.0.50: {}
 
   normalize-path@3.0.0: {}
+
+  oauth-1.0a@2.2.6: {}
 
   object-assign@4.1.1: {}
 

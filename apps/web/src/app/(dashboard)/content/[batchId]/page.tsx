@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
-import { approvePiece, regeneratePiece } from "./actions";
+import { approvePiece, publishToX, regeneratePiece } from "./actions";
 import type { ContentPlatform } from "@ai-workforce/core";
 
 const PLATFORM_LABEL: Record<ContentPlatform, string> = {
@@ -39,7 +39,21 @@ export default async function ContentBatchDetailPage({
           <div key={piece.id} className="space-y-2 rounded border border-neutral-800 p-4">
             <div className="flex items-center justify-between">
               <h2 className="font-medium">{PLATFORM_LABEL[piece.platform]}</h2>
-              {piece.reviewedAt && <span className="text-xs text-green-400">Approved</span>}
+              <div className="flex items-center gap-2">
+                {piece.publishedAt && (
+                  <a
+                    href={piece.publishedUrl ?? "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-blue-400 underline"
+                  >
+                    Published
+                  </a>
+                )}
+                {piece.reviewedAt && !piece.publishedAt && (
+                  <span className="text-xs text-green-400">Approved</span>
+                )}
+              </div>
             </div>
 
             <form action={approvePiece} className="space-y-2">
@@ -67,14 +81,27 @@ export default async function ContentBatchDetailPage({
               </div>
             </form>
 
-            <form action={regeneratePiece.bind(null, batchId, piece.platform)}>
-              <button
-                type="submit"
-                className="rounded border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900"
-              >
-                Regenerate
-              </button>
-            </form>
+            <div className="flex gap-2">
+              <form action={regeneratePiece.bind(null, batchId, piece.platform)}>
+                <button
+                  type="submit"
+                  className="rounded border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-900"
+                >
+                  Regenerate
+                </button>
+              </form>
+
+              {piece.platform === "x" && piece.reviewedAt && !piece.publishedAt && (
+                <form action={publishToX.bind(null, piece.id, batchId)}>
+                  <button
+                    type="submit"
+                    className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
+                  >
+                    Publish to X
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         ))}
         {pieces.length === 0 && (

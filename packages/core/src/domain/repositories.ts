@@ -57,6 +57,7 @@ export interface ContentPieceRepo {
     id: string,
     fields: Partial<Pick<ContentPiece, "content" | "reviewedAt" | "reviewedBy">>,
   ): Promise<void>;
+  markPublished(id: string, publishedUrl: string): Promise<void>;
   listByBatch(contentBatchId: string): Promise<ContentPiece[]>;
 }
 

@@ -6,6 +6,8 @@ import { buildWebExecutionContext } from "@/lib/build-web-context";
 import { ensureSkillsRegistered } from "@/lib/register-skills";
 import { SkillRegistry, type ContentPlatform } from "@ai-workforce/core";
 import { getCurrentUser } from "@/lib/supabase-auth";
+import { XTwitterClient } from "@ai-workforce/integration-x-twitter";
+import { env } from "@/lib/env";
 
 const PLATFORM_TO_SKILL: Record<Exclude<ContentPlatform, "seo">, string> = {
   blog: "generate-blog",
@@ -28,6 +30,32 @@ export async function approvePiece(formData: FormData): Promise<void> {
     reviewedAt: new Date(),
     reviewedBy: user?.id,
   });
+
+  revalidatePath(`/content/${batchId}`);
+}
+
+export async function publishToX(pieceId: string, batchId: string): Promise<void> {
+  const { X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET } = env;
+  if (!X_API_KEY || !X_API_SECRET || !X_ACCESS_TOKEN || !X_ACCESS_TOKEN_SECRET) {
+    throw new Error("X API credentials are not configured (X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_TOKEN_SECRET)");
+  }
+
+  const pieces = await repositories.contentPieces.listByBatch(batchId);
+  const piece = pieces.find((p) => p.id === pieceId);
+  if (!piece) throw new Error(`content_piece ${pieceId} not found in batch ${batchId}`);
+  if (piece.platform !== "x") throw new Error("publishToX can only be used on the 'x' platform piece");
+  if (!piece.reviewedAt) throw new Error("Approve this piece before publishing it");
+  if (piece.publishedAt) throw new Error("This piece has already been published");
+
+  const client = new XTwitterClient({
+    apiKey: X_API_KEY,
+    apiSecret: X_API_SECRET,
+    accessToken: X_ACCESS_TOKEN,
+    accessTokenSecret: X_ACCESS_TOKEN_SECRET,
+  });
+
+  const result = await client.postTweet(piece.content);
+  await repositories.contentPieces.markPublished(pieceId, result.url);
 
   revalidatePath(`/content/${batchId}`);
 }

@@ -16,6 +16,8 @@ interface Row {
   hashtags: string[];
   reviewed_by: string | null;
   reviewed_at: string | null;
+  published_at: string | null;
+  published_url: string | null;
   created_at: string;
 }
 
@@ -30,6 +32,8 @@ function toDomain(row: Row): ContentPiece {
     hashtags: row.hashtags ?? [],
     reviewedBy: row.reviewed_by,
     reviewedAt: row.reviewed_at ? new Date(row.reviewed_at) : null,
+    publishedAt: row.published_at ? new Date(row.published_at) : null,
+    publishedUrl: row.published_url,
     createdAt: new Date(row.created_at),
   };
 }
@@ -101,6 +105,15 @@ export class ContentPieceRepo implements IContentPieceRepo {
       .eq("id", id);
 
     if (error) throw new DatabaseError("update content_piece failed", error);
+  }
+
+  async markPublished(id: string, publishedUrl: string): Promise<void> {
+    const { error } = await this.client
+      .from("content_pieces")
+      .update({ published_at: new Date().toISOString(), published_url: publishedUrl })
+      .eq("id", id);
+
+    if (error) throw new DatabaseError("markPublished content_piece failed", error);
   }
 
   async listByBatch(contentBatchId: string): Promise<ContentPiece[]> {

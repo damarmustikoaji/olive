@@ -7,6 +7,7 @@ const nextConfig = {
     "@ai-workforce/db",
     "@ai-workforce/ai-provider",
     "@ai-workforce/agent-marketing-content-writer",
+    "@ai-workforce/integration-x-twitter",
   ],
 };
 

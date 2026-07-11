@@ -54,6 +54,8 @@ export interface ContentPiece {
   hashtags: string[];
   reviewedBy: string | null;
   reviewedAt: Date | null;
+  publishedAt: Date | null;
+  publishedUrl: string | null;
   createdAt: Date;
 }
 
