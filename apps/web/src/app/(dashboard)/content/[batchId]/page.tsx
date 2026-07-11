@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
 import { approvePiece, publishToX, regeneratePiece } from "./actions";
+import { env } from "@/lib/env";
 import type { ContentPlatform } from "@ai-workforce/core";
+
+const isXConfigured = Boolean(
+  env.X_API_KEY && env.X_API_SECRET && env.X_ACCESS_TOKEN && env.X_ACCESS_TOKEN_SECRET,
+);
 
 const PLATFORM_LABEL: Record<ContentPlatform, string> = {
   blog: "Blog",
@@ -91,7 +96,7 @@ export default async function ContentBatchDetailPage({
                 </button>
               </form>
 
-              {piece.platform === "x" && piece.reviewedAt && !piece.publishedAt && (
+              {isXConfigured && piece.platform === "x" && piece.reviewedAt && !piece.publishedAt && (
                 <form action={publishToX.bind(null, piece.id, batchId)}>
                   <button
                     type="submit"
