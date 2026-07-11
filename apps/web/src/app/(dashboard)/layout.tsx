@@ -36,11 +36,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             Runs
           </Link>
         </nav>
-        <form action={logout}>
-          <button type="submit" className="text-sm text-neutral-400 hover:text-neutral-100">
-            {user.email} — Logout
-          </button>
-        </form>
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/account" className="text-neutral-400 hover:text-neutral-100">
+            {user.email}
+          </Link>
+          <form action={logout}>
+            <button type="submit" className="text-neutral-400 hover:text-neutral-100">
+              Logout
+            </button>
+          </form>
+        </div>
       </header>
       <main className="flex-1 p-6">{children}</main>
     </div>
