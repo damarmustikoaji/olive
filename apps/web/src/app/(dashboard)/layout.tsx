@@ -1,12 +1,23 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/supabase-auth.js";
+import { createAuthClient, getCurrentUser } from "@/lib/supabase-auth.js";
+import { env } from "@/lib/env.js";
 import { logout } from "./actions.js";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  // Being authenticated only proves you have SOME account in this Supabase
+  // project — Auth is shared with every other app on Sandbox. Authorization
+  // for this specific dashboard is the allowlist, checked here explicitly.
+  const isAllowed = !!user.email && env.ALLOWED_ADMIN_EMAILS.includes(user.email.toLowerCase());
+  if (!isAllowed) {
+    const supabase = await createAuthClient();
+    await supabase.auth.signOut();
+    redirect("/login?error=Akun%20ini%20tidak%20diizinkan%20mengakses%20AI%20Workforce");
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
