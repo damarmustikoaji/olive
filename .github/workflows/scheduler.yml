@@ -6,7 +6,12 @@ on:
     # decision happens in code (isWithinWorkingHours), not here, because cron
     # granularity/delay in GitHub Actions is not reliable enough to trust directly.
     - cron: "0 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: "Bypass the working-hours gate (manual testing only)"
+        type: boolean
+        default: false
 
 jobs:
   run:
@@ -40,6 +45,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_DEFAULT_MODEL: ${{ secrets.OPENROUTER_DEFAULT_MODEL }}
           GH_TOKEN: ${{ secrets.GH_RELEASE_READ_TOKEN }}
+          FORCE_RUN: ${{ inputs.force_run }}
           MAX_TASK_ATTEMPTS: "3"
           WORK_HOURS_START: "09:00"
           WORK_HOURS_END: "17:00"

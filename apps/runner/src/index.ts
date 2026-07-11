@@ -6,7 +6,11 @@ import { registerWorkflows } from "./register-workflows.js";
 async function main(): Promise<void> {
   const { ctx, config } = await bootstrap();
 
-  if (!isWithinWorkingHours(ctx.now, config)) {
+  // FORCE_RUN exists only for manual workflow_dispatch testing outside business
+  // hours — the scheduled cron trigger never sets it.
+  const forceRun = process.env.FORCE_RUN === "true";
+
+  if (!forceRun && !isWithinWorkingHours(ctx.now, config)) {
     ctx.logger.info("outside working hours, skipping run");
     return;
   }
