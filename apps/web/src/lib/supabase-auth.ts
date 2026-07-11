@@ -1,6 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { env } from "./env.js";
+import { env } from "./env";
 
 interface CookieToSet {
   name: string;

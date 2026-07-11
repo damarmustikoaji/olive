@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { repositories } from "@/lib/repositories.js";
+import { repositories } from "@/lib/repositories";
 
 export default async function OverviewPage() {
   const [recentBatches, recentRuns] = await Promise.all([

@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { repositories } from "@/lib/repositories.js";
-import { buildWebExecutionContext } from "@/lib/build-web-context.js";
-import { ensureSkillsRegistered } from "@/lib/register-skills.js";
+import { repositories } from "@/lib/repositories";
+import { buildWebExecutionContext } from "@/lib/build-web-context";
+import { ensureSkillsRegistered } from "@/lib/register-skills";
 import { SkillRegistry, type ContentPlatform } from "@ai-workforce/core";
-import { getCurrentUser } from "@/lib/supabase-auth.js";
+import { getCurrentUser } from "@/lib/supabase-auth";
 
 const PLATFORM_TO_SKILL: Record<Exclude<ContentPlatform, "seo">, string> = {
   blog: "generate-blog",

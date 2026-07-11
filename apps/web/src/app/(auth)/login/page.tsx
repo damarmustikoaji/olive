@@ -1,4 +1,4 @@
-import { login } from "./actions.js";
+import { login } from "./actions";
 
 export default async function LoginPage({
   searchParams,

@@ -1,5 +1,5 @@
-import { repositories } from "@/lib/repositories.js";
-import { addWatchedRepository, toggleActive } from "./actions.js";
+import { repositories } from "@/lib/repositories";
+import { addWatchedRepository, toggleActive } from "./actions";
 
 export default async function RepositoriesPage() {
   const watched = await repositories.watchedRepositories.listAll();

@@ -1,8 +1,8 @@
 import { createLogger, type Config } from "@ai-workforce/shared";
 import type { ExecutionContext } from "@ai-workforce/core";
 import { OpenRouterProvider } from "@ai-workforce/ai-provider";
-import { repositories } from "./repositories.js";
-import { env } from "./env.js";
+import { repositories } from "./repositories";
+import { env } from "./env";
 
 /**
  * apps/web's equivalent of apps/runner's bootstrap() — built per request (regenerate

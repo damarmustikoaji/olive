@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { repositories } from "@/lib/repositories.js";
-import { approvePiece, regeneratePiece } from "./actions.js";
+import { repositories } from "@/lib/repositories";
+import { approvePiece, regeneratePiece } from "./actions";
 import type { ContentPlatform } from "@ai-workforce/core";
 
 const PLATFORM_LABEL: Record<ContentPlatform, string> = {

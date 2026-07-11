@@ -1,5 +1,5 @@
 import { createSupabaseClient, buildRepositories } from "@ai-workforce/db";
-import { env } from "./env.js";
+import { env } from "./env";
 
 /**
  * Service-role access to workforce.* tables. Shared module-level singleton so

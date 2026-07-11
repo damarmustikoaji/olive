@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { repositories } from "@/lib/repositories.js";
+import { repositories } from "@/lib/repositories";
 
 export default async function ContentListPage() {
   const batches = await repositories.contentBatches.listRecent({ limit: 50 });

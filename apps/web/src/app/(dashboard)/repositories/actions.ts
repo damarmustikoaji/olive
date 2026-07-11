@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { repositories } from "@/lib/repositories.js";
+import { repositories } from "@/lib/repositories";
 
 export async function addWatchedRepository(formData: FormData): Promise<void> {
   const owner = String(formData.get("owner") ?? "").trim();

@@ -1,5 +1,5 @@
-import { repositories } from "@/lib/repositories.js";
-import { retryTaskRun } from "./actions.js";
+import { repositories } from "@/lib/repositories";
+import { retryTaskRun } from "./actions";
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "text-neutral-400",

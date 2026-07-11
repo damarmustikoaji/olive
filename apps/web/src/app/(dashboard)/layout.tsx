@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createAuthClient, getCurrentUser } from "@/lib/supabase-auth.js";
-import { env } from "@/lib/env.js";
-import { logout } from "./actions.js";
+import { createAuthClient, getCurrentUser } from "@/lib/supabase-auth";
+import { env } from "@/lib/env";
+import { logout } from "./actions";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();

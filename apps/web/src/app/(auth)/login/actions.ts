@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAuthClient } from "@/lib/supabase-auth.js";
+import { createAuthClient } from "@/lib/supabase-auth";
 
 export async function login(formData: FormData): Promise<void> {
   const email = String(formData.get("email") ?? "");
