@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { login } from "./actions";
 
 export default async function LoginPage({
@@ -10,7 +11,10 @@ export default async function LoginPage({
   return (
     <main className="flex min-h-screen items-center justify-center">
       <form action={login} className="w-full max-w-sm space-y-4 rounded-lg border border-neutral-800 p-6">
-        <h1 className="text-lg font-semibold">AI Workforce — Login</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="AI Workforce" width={28} height={28} />
+          <h1 className="text-lg font-semibold">AI Workforce — Login</h1>
+        </div>
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 

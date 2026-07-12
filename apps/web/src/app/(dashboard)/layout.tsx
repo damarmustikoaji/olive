@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAuthClient, getCurrentUser } from "@/lib/supabase-auth";
@@ -22,8 +23,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-neutral-800 px-6 py-3">
-        <nav className="flex gap-4 text-sm">
-          <Link href="/" className="font-semibold">
+        <nav className="flex items-center gap-4 text-sm">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Image src="/logo.png" alt="AI Workforce" width={24} height={24} />
             AI Workforce
           </Link>
           <Link href="/board" className="text-neutral-400 hover:text-neutral-100">
