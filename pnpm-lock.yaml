@@ -63,6 +63,9 @@ importers:
       '@ai-workforce/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@ai-workforce/integration-threads':
+        specifier: workspace:*
+        version: link:../../packages/integrations/threads
       '@ai-workforce/integration-x-twitter':
         specifier: workspace:*
         version: link:../../packages/integrations/x-twitter
@@ -154,6 +157,16 @@ importers:
         version: 5.9.3
 
   packages/integrations/github:
+    dependencies:
+      '@ai-workforce/shared':
+        specifier: workspace:*
+        version: link:../../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/integrations/threads:
     dependencies:
       '@ai-workforce/shared':
         specifier: workspace:*

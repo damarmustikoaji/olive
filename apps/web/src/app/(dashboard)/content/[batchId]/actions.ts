@@ -7,6 +7,7 @@ import { ensureSkillsRegistered } from "@/lib/register-skills";
 import { SkillRegistry, type ContentPlatform } from "@ai-workforce/core";
 import { getCurrentUser } from "@/lib/supabase-auth";
 import { XTwitterClient } from "@ai-workforce/integration-x-twitter";
+import { ThreadsClient } from "@ai-workforce/integration-threads";
 import { env } from "@/lib/env";
 
 const PLATFORM_TO_SKILL: Record<Exclude<ContentPlatform, "seo">, string> = {
@@ -16,6 +17,7 @@ const PLATFORM_TO_SKILL: Record<Exclude<ContentPlatform, "seo">, string> = {
   facebook: "generate-facebook",
   instagram: "generate-instagram",
   newsletter: "generate-newsletter",
+  threads: "generate-threads",
 };
 
 export async function approvePiece(formData: FormData): Promise<void> {
@@ -55,6 +57,30 @@ export async function publishToX(pieceId: string, batchId: string): Promise<void
   });
 
   const result = await client.postTweet(piece.content);
+  await repositories.contentPieces.markPublished(pieceId, result.url);
+
+  revalidatePath(`/content/${batchId}`);
+}
+
+export async function publishToThreads(pieceId: string, batchId: string): Promise<void> {
+  const { THREADS_USER_ID, THREADS_ACCESS_TOKEN } = env;
+  if (!THREADS_USER_ID || !THREADS_ACCESS_TOKEN) {
+    throw new Error("Threads credentials are not configured (THREADS_USER_ID / THREADS_ACCESS_TOKEN)");
+  }
+
+  const pieces = await repositories.contentPieces.listByBatch(batchId);
+  const piece = pieces.find((p) => p.id === pieceId);
+  if (!piece) throw new Error(`content_piece ${pieceId} not found in batch ${batchId}`);
+  if (piece.platform !== "threads") throw new Error("publishToThreads can only be used on the 'threads' platform piece");
+  if (!piece.reviewedAt) throw new Error("Approve this piece before publishing it");
+  if (piece.publishedAt) throw new Error("This piece has already been published");
+
+  const client = new ThreadsClient({
+    userId: THREADS_USER_ID,
+    accessToken: THREADS_ACCESS_TOKEN,
+  });
+
+  const result = await client.postThread(piece.content);
   await repositories.contentPieces.markPublished(pieceId, result.url);
 
   revalidatePath(`/content/${batchId}`);

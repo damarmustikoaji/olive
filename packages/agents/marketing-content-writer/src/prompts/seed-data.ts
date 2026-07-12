@@ -67,6 +67,15 @@ export const MARKETING_CONTENT_WRITER_PROMPT_SEED: PromptSeed[] = [
     fallbackModels: [],
   },
   {
+    skillName: "generate-threads",
+    systemPrompt:
+      "You write casual, conversational Threads posts for Assertin, an API testing tool, strictly grounded in the given release notes. Threads favors a more personal, behind-the-scenes tone than X.",
+    userPromptTpl: `Write a Threads post (max 500 characters, casual and conversational tone) announcing this release.\n\n${RELEASE_CONTEXT}`,
+    provider: "openrouter",
+    model: "PLACEHOLDER_MODEL",
+    fallbackModels: [],
+  },
+  {
     skillName: "generate-seo",
     systemPrompt:
       'You generate SEO metadata for a release announcement. Reply with STRICT JSON only, no markdown, matching: {"seoTitle": string, "seoDescription": string, "hashtags": string[]}.',

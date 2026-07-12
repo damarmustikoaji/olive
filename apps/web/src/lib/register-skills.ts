@@ -6,6 +6,7 @@ import {
   GenerateLinkedinSkill,
   GenerateNewsletterSkill,
   GenerateSeoSkill,
+  GenerateThreadsSkill,
   GenerateXSkill,
 } from "@ai-workforce/agent-marketing-content-writer";
 
@@ -25,6 +26,7 @@ export function ensureSkillsRegistered(): void {
   SkillRegistry.register(new GenerateFacebookSkill());
   SkillRegistry.register(new GenerateInstagramSkill());
   SkillRegistry.register(new GenerateNewsletterSkill());
+  SkillRegistry.register(new GenerateThreadsSkill());
   SkillRegistry.register(new GenerateSeoSkill());
 
   registered = true;

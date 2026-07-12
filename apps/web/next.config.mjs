@@ -8,6 +8,7 @@ const nextConfig = {
     "@ai-workforce/ai-provider",
     "@ai-workforce/agent-marketing-content-writer",
     "@ai-workforce/integration-x-twitter",
+    "@ai-workforce/integration-threads",
   ],
 };
 

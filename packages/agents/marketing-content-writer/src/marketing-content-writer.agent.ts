@@ -7,6 +7,7 @@ import {
   GenerateLinkedinSkill,
   GenerateNewsletterSkill,
   GenerateSeoSkill,
+  GenerateThreadsSkill,
   GenerateXSkill,
   type SeoOutput,
 } from "./skills/index.js";
@@ -27,6 +28,7 @@ const SKILL_TO_PLATFORM: Record<string, ContentPlatform> = {
   "generate-facebook": "facebook",
   "generate-instagram": "instagram",
   "generate-newsletter": "newsletter",
+  "generate-threads": "threads",
 };
 
 export class MarketingContentWriterAgent implements Agent<ContentWriterAgentInput, ContentWriterResult> {
@@ -39,6 +41,7 @@ export class MarketingContentWriterAgent implements Agent<ContentWriterAgentInpu
     new GenerateFacebookSkill(),
     new GenerateInstagramSkill(),
     new GenerateNewsletterSkill(),
+    new GenerateThreadsSkill(),
   ];
 
   private readonly seoSkill = new GenerateSeoSkill();

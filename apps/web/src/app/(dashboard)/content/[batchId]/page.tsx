@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
-import { approvePiece, publishToX, regeneratePiece } from "./actions";
+import { approvePiece, publishToThreads, publishToX, regeneratePiece } from "./actions";
 import { env } from "@/lib/env";
 import type { ContentPlatform } from "@ai-workforce/core";
 
 const isXConfigured = Boolean(
   env.X_API_KEY && env.X_API_SECRET && env.X_ACCESS_TOKEN && env.X_ACCESS_TOKEN_SECRET,
 );
+const isThreadsConfigured = Boolean(env.THREADS_USER_ID && env.THREADS_ACCESS_TOKEN);
 
 const PLATFORM_LABEL: Record<ContentPlatform, string> = {
   blog: "Blog",
@@ -15,6 +16,7 @@ const PLATFORM_LABEL: Record<ContentPlatform, string> = {
   facebook: "Facebook",
   instagram: "Instagram",
   newsletter: "Newsletter",
+  threads: "Threads",
   seo: "SEO",
 };
 
@@ -103,6 +105,17 @@ export default async function ContentBatchDetailPage({
                     className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-500"
                   >
                     Publish to X
+                  </button>
+                </form>
+              )}
+
+              {isThreadsConfigured && piece.platform === "threads" && piece.reviewedAt && !piece.publishedAt && (
+                <form action={publishToThreads.bind(null, piece.id, batchId)}>
+                  <button
+                    type="submit"
+                    className="rounded bg-neutral-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700"
+                  >
+                    Publish to Threads
                   </button>
                 </form>
               )}

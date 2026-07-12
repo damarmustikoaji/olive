@@ -42,6 +42,7 @@ export type ContentPlatform =
   | "facebook"
   | "instagram"
   | "newsletter"
+  | "threads"
   | "seo";
 
 export interface ContentPiece {

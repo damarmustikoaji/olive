@@ -15,6 +15,9 @@ export const env = {
   X_API_SECRET: process.env.X_API_SECRET,
   X_ACCESS_TOKEN: process.env.X_ACCESS_TOKEN,
   X_ACCESS_TOKEN_SECRET: process.env.X_ACCESS_TOKEN_SECRET,
+  // Optional: only needed for the "Publish to Threads" action.
+  THREADS_USER_ID: process.env.THREADS_USER_ID,
+  THREADS_ACCESS_TOKEN: process.env.THREADS_ACCESS_TOKEN,
   // Auth (auth.users) is shared with every other app in the Sandbox Supabase
   // project — being authenticated there does NOT mean being authorized here.
   // This allowlist is the actual access boundary for the AI Workforce dashboard.
