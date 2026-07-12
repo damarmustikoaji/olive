@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { repositories } from "@/lib/repositories";
 import { createManualTask } from "./actions";
+import { AgentFilter } from "./agent-filter";
 import type { Task, TaskStatus } from "@ai-workforce/core";
 
 const COLUMNS: { status: TaskStatus; label: string }[] = [
@@ -12,14 +13,31 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
   { status: "done", label: "Done" },
 ];
 
-const SEVERITY_COLOR: Record<string, string> = {
-  minor: "bg-neutral-700 text-neutral-200",
-  medium: "bg-yellow-900 text-yellow-300",
-  critical: "bg-red-900 text-red-300",
+const SEVERITY_BORDER: Record<string, string> = {
+  minor: "border-l-neutral-600",
+  medium: "border-l-yellow-600",
+  critical: "border-l-red-600",
 };
 
-export default async function BoardPage() {
-  const tasks = await repositories.tasks.listAll(200);
+const SEVERITY_BADGE: Record<string, string> = {
+  minor: "bg-neutral-800 text-neutral-300",
+  medium: "bg-yellow-900/60 text-yellow-300",
+  critical: "bg-red-900/60 text-red-300",
+};
+
+export default async function BoardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ agent?: string }>;
+}) {
+  const { agent: agentFilter } = await searchParams;
+
+  const [allTasks, agentProfiles] = await Promise.all([
+    repositories.tasks.listAll(200),
+    repositories.agentProfiles.listAll(),
+  ]);
+
+  const tasks = agentFilter ? allTasks.filter((t) => t.assigneeAgent === agentFilter) : allTasks;
 
   const byStatus = new Map<TaskStatus, Task[]>();
   for (const task of tasks) {
@@ -33,20 +51,24 @@ export default async function BoardPage() {
   const workforceCounts = {
     working: (byStatus.get("in_progress")?.length ?? 0) + (byStatus.get("assigned")?.length ?? 0),
     waiting: byStatus.get("ready_for_review")?.length ?? 0,
-    failed: failedOrRejected.length,
     done: byStatus.get("done")?.length ?? 0,
   };
+
+  const agentNames = agentProfiles
+    .filter((p) => p.status === "active")
+    .map((p) => p.agentName)
+    .sort();
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Board</h1>
+        <AgentFilter agents={agentNames} />
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <StatWidget label="Working" value={workforceCounts.working} color="text-blue-400" />
         <StatWidget label="Waiting Approval" value={workforceCounts.waiting} color="text-yellow-400" />
-        <StatWidget label="Failed/Rejected" value={workforceCounts.failed} color="text-red-400" />
         <StatWidget label="Done" value={workforceCounts.done} color="text-green-400" />
       </div>
 
@@ -100,50 +122,51 @@ export default async function BoardPage() {
         </form>
       </details>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-7">
         {COLUMNS.map((col) => (
-          <div key={col.status} className="space-y-2">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              {col.label} ({byStatus.get(col.status)?.length ?? 0})
-            </h2>
-            <div className="space-y-2">
-              {(byStatus.get(col.status) ?? []).map((task) => (
-                <Link
-                  key={task.id}
-                  href={`/tasks/${task.id}`}
-                  className="block rounded border border-neutral-800 p-3 text-sm hover:border-neutral-600"
-                >
-                  <p className="font-medium">{task.title}</p>
-                  <div className="mt-2 flex items-center gap-2 text-xs">
-                    <span className={`rounded px-1.5 py-0.5 ${SEVERITY_COLOR[task.severity]}`}>
-                      {task.severity}
-                    </span>
-                    <span className="text-neutral-500">{task.assigneeAgent ?? "unassigned"}</span>
-                  </div>
-                </Link>
-              ))}
-              {(byStatus.get(col.status) ?? []).length === 0 && (
-                <p className="text-xs text-neutral-600">Kosong</p>
+          <BoardColumn key={col.status} label={col.label} tasks={byStatus.get(col.status) ?? []} />
+        ))}
+        <BoardColumn label="Rejected/Failed" tasks={failedOrRejected} accent="text-red-400" />
+      </div>
+    </div>
+  );
+}
+
+function BoardColumn({ label, tasks, accent }: { label: string; tasks: Task[]; accent?: string }) {
+  return (
+    <div className="space-y-2">
+      <h2 className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide ${accent ?? "text-neutral-500"}`}>
+        {label}
+        <span className="rounded-full bg-neutral-800 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+          {tasks.length}
+        </span>
+      </h2>
+      <div className="space-y-2">
+        {tasks.map((task) => (
+          <Link
+            key={task.id}
+            href={`/tasks/${task.id}`}
+            className={`block rounded border border-neutral-800 border-l-2 bg-neutral-900/40 p-3 text-sm shadow-sm transition hover:border-neutral-600 hover:bg-neutral-900 ${SEVERITY_BORDER[task.severity]}`}
+          >
+            <p className="font-medium leading-snug">{task.title}</p>
+            <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+              <span className={`rounded px-1.5 py-0.5 ${SEVERITY_BADGE[task.severity]}`}>{task.severity}</span>
+              {task.assigneeAgent ? (
+                <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-neutral-300">
+                  {task.assigneeAgent}
+                </span>
+              ) : (
+                <span className="text-neutral-600">unassigned</span>
               )}
             </div>
-          </div>
+          </Link>
         ))}
+        {tasks.length === 0 && (
+          <p className="rounded border border-dashed border-neutral-800 px-3 py-4 text-center text-xs text-neutral-600">
+            Kosong
+          </p>
+        )}
       </div>
-
-      {failedOrRejected.length > 0 && (
-        <div className="rounded border border-red-900 bg-red-950/30 p-4">
-          <h2 className="mb-2 text-sm font-medium text-red-300">Rejected / Failed</h2>
-          <ul className="space-y-1 text-sm">
-            {failedOrRejected.map((task) => (
-              <li key={task.id}>
-                <Link href={`/tasks/${task.id}`} className="hover:underline">
-                  {task.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

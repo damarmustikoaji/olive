@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAuthClient, getCurrentUser } from "@/lib/supabase-auth";
 import { env } from "@/lib/env";
+import { NavLink } from "@/components/nav-link";
 import { logout } from "./actions";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
@@ -28,21 +29,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <Image src="/logo.png" alt="AI Workforce" width={24} height={24} />
             AI Workforce
           </Link>
-          <Link href="/board" className="text-neutral-400 hover:text-neutral-100">
-            Board
-          </Link>
-          <Link href="/agents" className="text-neutral-400 hover:text-neutral-100">
-            Agents
-          </Link>
-          <Link href="/repositories" className="text-neutral-400 hover:text-neutral-100">
-            Repositories
-          </Link>
-          <Link href="/content" className="text-neutral-400 hover:text-neutral-100">
-            Content
-          </Link>
-          <Link href="/runs" className="text-neutral-400 hover:text-neutral-100">
-            Runs
-          </Link>
+          <NavLink href="/board">Board</NavLink>
+          <NavLink href="/agents">Agents</NavLink>
+          <NavLink href="/repositories">Repositories</NavLink>
+          <NavLink href="/content">Content</NavLink>
+          <NavLink href="/runs">Runs</NavLink>
         </nav>
         <div className="flex items-center gap-4 text-sm">
           <Link href="/account" className="text-neutral-400 hover:text-neutral-100">
