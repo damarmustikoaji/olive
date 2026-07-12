@@ -16,6 +16,7 @@
     "@ai-workforce/ai-provider": "workspace:*",
     "@ai-workforce/integration-github": "workspace:*",
     "@ai-workforce/workflow-release-to-content": "workspace:*",
+    "@ai-workforce/workflow-workforce-manager": "workspace:*",
     "@ai-workforce/agent-marketing-content-writer": "workspace:*"
   },
   "devDependencies": {

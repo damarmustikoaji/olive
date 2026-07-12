@@ -1,5 +1,4 @@
 import type { ExecutionContext, Workflow, WorkUnit, WatchedRepository } from "@ai-workforce/core";
-import { MarketingContentWriterAgent } from "@ai-workforce/agent-marketing-content-writer";
 import { GithubReleaseClient, type GithubRelease } from "@ai-workforce/integration-github";
 
 interface Payload {
@@ -7,8 +6,14 @@ interface Payload {
   release: GithubRelease;
 }
 
-export class ReleaseToContentWorkflow implements Workflow {
-  readonly name = "release-to-content";
+/**
+ * A "task source", not a content generator. Its only job is to turn a new
+ * GitHub release into one Task on the backlog (status: backlog). What
+ * happens to that Task next — who gets assigned, what content gets made —
+ * is entirely the Workforce Manager's decision, not this workflow's.
+ */
+export class GithubReleaseTaskSourceWorkflow implements Workflow {
+  readonly name = "github-release-task-source";
 
   constructor(private readonly githubClient: GithubReleaseClient) {}
 
@@ -31,30 +36,24 @@ export class ReleaseToContentWorkflow implements Workflow {
 
   async execute(unit: WorkUnit, ctx: ExecutionContext): Promise<void> {
     const { repo, release } = unit.payload as Payload;
+    const sourceRef = `${repo.owner}/${repo.repo}@${release.tag}`;
 
-    const batch = await ctx.repositories.contentBatches.create({
-      taskRunId: ctx.taskRunId,
-      repositoryId: repo.id,
-      releaseTag: release.tag,
-      releaseTitle: release.title,
-      releaseBody: release.body,
-    });
-
-    const agent = new MarketingContentWriterAgent();
-    const result = await agent.run(
-      {
-        contentBatchId: batch.id,
+    const task = await ctx.repositories.tasks.getOrCreateBySourceRef({
+      title: `Promosikan release ${release.tag} (${repo.owner}/${repo.repo})`,
+      description: release.body,
+      source: "github_release",
+      sourceRef,
+      severity: "medium",
+      priority: "medium",
+      payload: {
+        repositoryId: repo.id,
+        releaseTag: release.tag,
         releaseTitle: release.title,
         releaseBody: release.body,
       },
-      ctx,
-    );
+    });
 
-    if (result.piecesFailed.length > 0) {
-      ctx.logger.warn("some content pieces failed to generate", { failed: result.piecesFailed });
-    }
-
-    await ctx.repositories.contentBatches.updateStatus(batch.id, "ready");
+    await ctx.repositories.taskEvents.record(task.id, "task_created", { source: "github_release", sourceRef });
     await ctx.repositories.watchedRepositories.updateCheckpoint(repo.id, release.tag);
   }
 }

@@ -71,6 +71,53 @@ export interface PromptVersion {
   createdAt: Date;
 }
 
+// ============================================================
+// TASK — the central business entity (Jira-like). Not to be confused with
+// TaskRun above, which is purely infra bookkeeping (one row per workflow
+// execution, for idempotency/retry). A Task is work a human or agent cares
+// about; a TaskRun is "did this GitHub Actions shift already do X".
+// ============================================================
+
+export type TaskStatus =
+  | "backlog"
+  | "assigned"
+  | "in_progress"
+  | "ready_for_review"
+  | "approved"
+  | "done"
+  | "rejected"
+  | "failed";
+
+export type TaskSeverity = "minor" | "medium" | "critical";
+export type TaskPriority = "low" | "medium" | "high";
+export type TaskSource = "github_release" | "github_issue" | "manual";
+export type TaskCreatedBy = "system" | "owner";
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  source: TaskSource;
+  sourceRef: string | null;
+  severity: TaskSeverity;
+  priority: TaskPriority;
+  status: TaskStatus;
+  assigneeAgent: string | null;
+  contentBatchId: string | null;
+  payload: Record<string, unknown>;
+  createdBy: TaskCreatedBy;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TaskEvent {
+  id: string;
+  taskId: string;
+  event: string;
+  meta: Record<string, unknown> | null;
+  createdAt: Date;
+}
+
 export interface AiInvocationRecord {
   taskRunId: string;
   provider: string;

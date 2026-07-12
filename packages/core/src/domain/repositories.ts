@@ -5,7 +5,14 @@ import type {
   ContentPiece,
   ContentPlatform,
   PromptVersion,
+  Task,
+  TaskCreatedBy,
+  TaskEvent,
+  TaskPriority,
   TaskRun,
+  TaskSeverity,
+  TaskSource,
+  TaskStatus,
   WatchedRepository,
 } from "./entities.js";
 
@@ -69,9 +76,48 @@ export interface AiInvocationRepo {
   record(entry: AiInvocationRecord): Promise<void>;
 }
 
+/**
+ * The backlog. WorkTaskRepo (not "TaskRepo") to keep it unambiguous next to
+ * TaskRunRepo, which is an unrelated infra concept (see entities.ts).
+ */
+export interface WorkTaskRepo {
+  getOrCreateBySourceRef(input: {
+    title: string;
+    description?: string;
+    source: TaskSource;
+    sourceRef: string;
+    severity?: TaskSeverity;
+    priority?: TaskPriority;
+    payload?: Record<string, unknown>;
+  }): Promise<Task>;
+  create(input: {
+    title: string;
+    description?: string;
+    source: TaskSource;
+    sourceRef?: string;
+    severity?: TaskSeverity;
+    priority?: TaskPriority;
+    payload?: Record<string, unknown>;
+    createdBy?: TaskCreatedBy;
+  }): Promise<Task>;
+  findById(id: string): Promise<Task | null>;
+  listByStatus(status: TaskStatus): Promise<Task[]>;
+  listAll(limit?: number): Promise<Task[]>;
+  assign(id: string, assigneeAgent: string): Promise<void>;
+  updateStatus(id: string, status: TaskStatus): Promise<void>;
+  linkContentBatch(id: string, contentBatchId: string): Promise<void>;
+}
+
+export interface TaskEventRepo {
+  record(taskId: string, event: string, meta?: Record<string, unknown>): Promise<TaskEvent>;
+  listByTask(taskId: string): Promise<TaskEvent[]>;
+}
+
 export interface RepositoryBundle {
   watchedRepositories: WatchedRepositoryRepo;
   taskRuns: TaskRunRepo;
+  tasks: WorkTaskRepo;
+  taskEvents: TaskEventRepo;
   contentBatches: ContentBatchRepo;
   contentPieces: ContentPieceRepo;
   promptVersions: PromptVersionRepo;

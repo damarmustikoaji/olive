@@ -41,6 +41,9 @@ importers:
       '@ai-workforce/workflow-release-to-content':
         specifier: workspace:*
         version: link:../../packages/workflows/release-to-content
+      '@ai-workforce/workflow-workforce-manager':
+        specifier: workspace:*
+        version: link:../../packages/workflows/workforce-manager
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -185,15 +188,25 @@ importers:
 
   packages/workflows/release-to-content:
     dependencies:
-      '@ai-workforce/agent-marketing-content-writer':
-        specifier: workspace:*
-        version: link:../../agents/marketing-content-writer
       '@ai-workforce/core':
         specifier: workspace:*
         version: link:../../core
       '@ai-workforce/integration-github':
         specifier: workspace:*
         version: link:../../integrations/github
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/workflows/workforce-manager:
+    dependencies:
+      '@ai-workforce/agent-marketing-content-writer':
+        specifier: workspace:*
+        version: link:../../agents/marketing-content-writer
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
     devDependencies:
       typescript:
         specifier: ^5.6.0

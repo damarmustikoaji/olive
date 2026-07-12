@@ -1,5 +1,5 @@
 {
-  "name": "@ai-workforce/workflow-release-to-content",
+  "name": "@ai-workforce/workflow-workforce-manager",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ai-workforce/core": "workspace:*",
-    "@ai-workforce/integration-github": "workspace:*"
+    "@ai-workforce/agent-marketing-content-writer": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
