@@ -65,25 +65,31 @@ export default async function BoardPage() {
             rows={3}
             className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
           />
-          <div className="flex gap-3">
-            <select
-              name="severity"
-              defaultValue="medium"
-              className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
-            >
-              <option value="minor">Minor</option>
-              <option value="medium">Medium</option>
-              <option value="critical">Critical</option>
-            </select>
-            <select
-              name="priority"
-              defaultValue="medium"
-              className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+          <div className="flex gap-4">
+            <label className="space-y-1 text-xs text-neutral-400">
+              Severity
+              <select
+                name="severity"
+                defaultValue="medium"
+                className="block rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100"
+              >
+                <option value="minor">Minor</option>
+                <option value="medium">Medium</option>
+                <option value="critical">Critical</option>
+              </select>
+            </label>
+            <label className="space-y-1 text-xs text-neutral-400">
+              Priority
+              <select
+                name="priority"
+                defaultValue="medium"
+                className="block rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
           </div>
           <button
             type="submit"
