@@ -75,6 +75,9 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
                 {event.createdAt.toLocaleString("id-ID", { hour: "2-digit", minute: "2-digit" })}
               </span>{" "}
               — {event.event}
+              {event.meta && Object.keys(event.meta).length > 0 && (
+                <span className="text-neutral-500"> ({formatMeta(event.meta)})</span>
+              )}
             </li>
           ))}
           {events.length === 0 && <li className="text-neutral-600">Belum ada aktivitas.</li>}
@@ -82,6 +85,12 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
       </div>
     </div>
   );
+}
+
+function formatMeta(meta: Record<string, unknown>): string {
+  return Object.entries(meta)
+    .map(([key, value]) => `${key}: ${String(value)}`)
+    .join(", ");
 }
 
 function Field({ label, value }: { label: string; value: string }) {

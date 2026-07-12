@@ -73,10 +73,10 @@ export class WorkforceManagerWorkflow implements Workflow {
         ctx,
       );
       await ctx.repositories.tasks.updateSeverity(task.id, classification.severity);
-      await ctx.repositories.taskEvents.record(
-        task.id,
-        `severity_classified: ${classification.severity} — ${classification.reasoning}`,
-      );
+      await ctx.repositories.taskEvents.record(task.id, "severity_classified", {
+        severity: classification.severity,
+        reasoning: classification.reasoning,
+      });
       task = { ...task, severity: classification.severity };
     }
 
