@@ -14,7 +14,9 @@
     { "path": "../../packages/integrations/github" },
     { "path": "../../packages/integrations/threads" },
     { "path": "../../packages/workflows/release-to-content" },
+    { "path": "../../packages/workflows/support-ticket-task-source" },
     { "path": "../../packages/workflows/workforce-manager" },
-    { "path": "../../packages/agents/marketing-content-writer" }
+    { "path": "../../packages/agents/marketing-content-writer" },
+    { "path": "../../packages/agents/support-agent" }
   ]
 }

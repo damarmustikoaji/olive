@@ -8,6 +8,7 @@
   "references": [
     { "path": "../../core" },
     { "path": "../../agents/marketing-content-writer" },
+    { "path": "../../agents/support-agent" },
     { "path": "../../integrations/threads" }
   ]
 }

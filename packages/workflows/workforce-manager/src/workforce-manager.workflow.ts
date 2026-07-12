@@ -1,5 +1,6 @@
 import type { ExecutionContext, Task, Workflow, WorkUnit } from "@ai-workforce/core";
 import { MarketingContentWriterAgent } from "@ai-workforce/agent-marketing-content-writer";
+import { DraftTicketReplySkill } from "@ai-workforce/agent-support";
 import type { ThreadsClient } from "@ai-workforce/integration-threads";
 import { ClassifySeverityTaskSkill } from "./classify-severity.skill.js";
 
@@ -14,6 +15,12 @@ interface ReleasePayload {
   releaseBody: string;
 }
 
+interface SupportTicketPayload {
+  ticketId: string;
+  userId: string;
+  ticketType: string;
+}
+
 /**
  * The Manager never does the work itself — it only reads the backlog,
  * decides who's capable of a task, and hands it off. Each shift moves a
@@ -21,14 +28,15 @@ interface ReleasePayload {
  * ready_for_review/done), never all the way through in one run, so a crash
  * partway through never loses more than one stage of progress.
  *
- * Only one specialist exists today (marketing-content-writer). Adding a
- * Developer/QA agent later means adding a case to `pickAgentFor`, not
- * rewriting this workflow.
+ * Two specialists exist today (marketing-content-writer, support-agent).
+ * Adding another means a case in `pickAgentFor` and a branch in
+ * `executeStage`, not rewriting this workflow.
  */
 export class WorkforceManagerWorkflow implements Workflow {
   readonly name = "workforce-manager";
 
   private readonly classifySeveritySkill = new ClassifySeverityTaskSkill();
+  private readonly draftTicketReplySkill = new DraftTicketReplySkill();
 
   constructor(private readonly threadsClient?: ThreadsClient) {}
 
@@ -67,9 +75,8 @@ export class WorkforceManagerWorkflow implements Workflow {
     // The Owner's own judgment on a manually-created task is never
     // second-guessed by the Manager's classifier.
     if (task.source !== "manual") {
-      const payload = task.payload as unknown as ReleasePayload;
       const classification = await this.classifySeveritySkill.execute(
-        { releaseTitle: payload.releaseTitle, releaseBody: payload.releaseBody },
+        { title: task.title, description: task.description ?? "" },
         ctx,
       );
       await ctx.repositories.tasks.updateSeverity(task.id, classification.severity);
@@ -95,14 +102,23 @@ export class WorkforceManagerWorkflow implements Workflow {
   }
 
   private async executeStage(task: Task, ctx: ExecutionContext): Promise<void> {
-    if (task.assigneeAgent !== "marketing-content-writer") {
-      ctx.logger.warn("assigned agent has no execution handler yet", {
-        taskId: task.id,
-        assigneeAgent: task.assigneeAgent,
-      });
+    if (task.assigneeAgent === "marketing-content-writer") {
+      await this.executeContentWriter(task, ctx);
       return;
     }
 
+    if (task.assigneeAgent === "support-agent") {
+      await this.executeSupportAgent(task, ctx);
+      return;
+    }
+
+    ctx.logger.warn("assigned agent has no execution handler yet", {
+      taskId: task.id,
+      assigneeAgent: task.assigneeAgent,
+    });
+  }
+
+  private async executeContentWriter(task: Task, ctx: ExecutionContext): Promise<void> {
     await ctx.repositories.tasks.updateStatus(task.id, "in_progress");
     await ctx.repositories.taskEvents.record(task.id, "in_progress");
 
@@ -146,10 +162,10 @@ export class WorkforceManagerWorkflow implements Workflow {
     // Non-critical: the Manager is confident enough to approve and publish
     // on its own — the Owner finds out by seeing it land on the board, not
     // by being asked first.
-    await this.autoApproveAndPublish(task, batch.id, ctx);
+    await this.autoApproveAndPublishContent(task, batch.id, ctx);
   }
 
-  private async autoApproveAndPublish(task: Task, contentBatchId: string, ctx: ExecutionContext): Promise<void> {
+  private async autoApproveAndPublishContent(task: Task, contentBatchId: string, ctx: ExecutionContext): Promise<void> {
     const pieces = await ctx.repositories.contentPieces.listByBatch(contentBatchId);
 
     for (const piece of pieces) {
@@ -173,9 +189,40 @@ export class WorkforceManagerWorkflow implements Workflow {
 
     await ctx.repositories.tasks.updateStatus(task.id, "done");
   }
+
+  private async executeSupportAgent(task: Task, ctx: ExecutionContext): Promise<void> {
+    await ctx.repositories.tasks.updateStatus(task.id, "in_progress");
+    await ctx.repositories.taskEvents.record(task.id, "in_progress");
+
+    const payload = task.payload as unknown as SupportTicketPayload;
+
+    const draftReply = await this.draftTicketReplySkill.execute(
+      { title: task.title, description: task.description ?? "", ticketType: payload.ticketType },
+      ctx,
+    );
+    await ctx.repositories.taskEvents.record(task.id, "draft_reply_generated", { draftReply });
+
+    if (payload.ticketType === "issue") {
+      // Bug reports are never auto-resolved — there's no Developer agent yet
+      // to actually fix anything. This just guarantees the report is triaged
+      // and visible, not silently sitting in the source app unactioned.
+      await ctx.repositories.tasks.updateStatus(task.id, "ready_for_review");
+      return;
+    }
+
+    // ask/feedback: same severity-based auto-resolve as content tasks.
+    if (task.severity === "critical") {
+      await ctx.repositories.tasks.updateStatus(task.id, "ready_for_review");
+      return;
+    }
+
+    await ctx.repositories.taskEvents.record(task.id, "auto_approved_by_manager", { severity: task.severity });
+    await ctx.repositories.tasks.updateStatus(task.id, "done");
+  }
 }
 
 function pickAgentFor(task: Task): string | null {
   if (task.source === "github_release") return "marketing-content-writer";
+  if (task.source === "support_ticket") return "support-agent";
   return null;
 }

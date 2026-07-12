@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "./supabase-client.js";
+import { createSupabaseClient } from "./supabase-client.js";
 import type { RepositoryBundle } from "@ai-workforce/core";
 import { WatchedRepositoryRepo } from "./repositories/watched-repository.repo.js";
 import { TaskRunRepo } from "./repositories/task-run.repo.js";
@@ -9,18 +9,28 @@ import { ContentPieceRepo } from "./repositories/content-piece.repo.js";
 import { PromptVersionRepo } from "./repositories/prompt-version.repo.js";
 import { AiInvocationRepo } from "./repositories/ai-invocation.repo.js";
 import { AgentProfileRepo } from "./repositories/agent-profile.repo.js";
+import { SupportTicketRepo } from "./repositories/support-ticket.repo.js";
 
-/** Single place both apps/runner and apps/web call to get a fully wired RepositoryBundle. */
-export function buildRepositories(client: SupabaseClient): RepositoryBundle {
+/**
+ * Single place both apps/runner and apps/web call to get a fully wired
+ * RepositoryBundle. Builds two schema-bound clients under the hood — one
+ * for "workforce" (everything AI Workforce owns), one for "public" (Sandbox's
+ * own tables, read-only, currently just support_tickets).
+ */
+export function buildRepositories(url: string, serviceRoleKey: string): RepositoryBundle {
+  const workforceClient = createSupabaseClient(url, serviceRoleKey, "workforce");
+  const publicClient = createSupabaseClient(url, serviceRoleKey, "public");
+
   return {
-    watchedRepositories: new WatchedRepositoryRepo(client),
-    taskRuns: new TaskRunRepo(client),
-    tasks: new WorkTaskRepo(client),
-    taskEvents: new TaskEventRepo(client),
-    contentBatches: new ContentBatchRepo(client),
-    contentPieces: new ContentPieceRepo(client),
-    promptVersions: new PromptVersionRepo(client),
-    aiInvocations: new AiInvocationRepo(client),
-    agentProfiles: new AgentProfileRepo(client),
+    watchedRepositories: new WatchedRepositoryRepo(workforceClient),
+    taskRuns: new TaskRunRepo(workforceClient),
+    tasks: new WorkTaskRepo(workforceClient),
+    taskEvents: new TaskEventRepo(workforceClient),
+    contentBatches: new ContentBatchRepo(workforceClient),
+    contentPieces: new ContentPieceRepo(workforceClient),
+    promptVersions: new PromptVersionRepo(workforceClient),
+    aiInvocations: new AiInvocationRepo(workforceClient),
+    agentProfiles: new AgentProfileRepo(workforceClient),
+    supportTickets: new SupportTicketRepo(publicClient),
   };
 }

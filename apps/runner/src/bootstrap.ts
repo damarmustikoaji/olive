@@ -1,6 +1,6 @@
 import { loadConfig, createLogger, type Config } from "@ai-workforce/shared";
 import type { ExecutionContext } from "@ai-workforce/core";
-import { createSupabaseClient, buildRepositories } from "@ai-workforce/db";
+import { buildRepositories } from "@ai-workforce/db";
 import { CompositeAiProvider, GroqProvider, OpenRouterProvider } from "@ai-workforce/ai-provider";
 import type { AiProvider } from "@ai-workforce/core";
 
@@ -17,8 +17,7 @@ export interface Bootstrapped {
 export async function bootstrap(): Promise<Bootstrapped> {
   const config = loadConfig();
 
-  const supabase = createSupabaseClient(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
-  const repositories = buildRepositories(supabase);
+  const repositories = buildRepositories(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY);
 
   const providers: AiProvider[] = [new OpenRouterProvider({ apiKey: config.OPENROUTER_API_KEY })];
   if (config.GROQ_API_KEY) providers.push(new GroqProvider({ apiKey: config.GROQ_API_KEY }));

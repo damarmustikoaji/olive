@@ -1,5 +1,5 @@
 {
-  "name": "@ai-workforce/workflow-workforce-manager",
+  "name": "@ai-workforce/workflow-support-ticket-task-source",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@ai-workforce/core": "workspace:*",
-    "@ai-workforce/agent-marketing-content-writer": "workspace:*",
-    "@ai-workforce/agent-support": "workspace:*",
-    "@ai-workforce/integration-threads": "workspace:*"
+    "@ai-workforce/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0"

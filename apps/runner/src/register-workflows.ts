@@ -3,6 +3,7 @@ import type { Config } from "@ai-workforce/shared";
 import { GithubReleaseClient } from "@ai-workforce/integration-github";
 import { ThreadsClient } from "@ai-workforce/integration-threads";
 import { GithubReleaseTaskSourceWorkflow } from "@ai-workforce/workflow-release-to-content";
+import { SupportTicketTaskSourceWorkflow } from "@ai-workforce/workflow-support-ticket-task-source";
 import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manager";
 
 /**
@@ -25,6 +26,7 @@ export function registerWorkflows(config: Config): void {
       : undefined;
 
   WorkflowRegistry.register(new GithubReleaseTaskSourceWorkflow(githubClient));
+  WorkflowRegistry.register(new SupportTicketTaskSourceWorkflow());
   WorkflowRegistry.register(new WorkforceManagerWorkflow(threadsClient));
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }

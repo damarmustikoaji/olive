@@ -2,8 +2,8 @@ import { PromptDrivenSkill } from "@ai-workforce/core";
 import type { TaskSeverity } from "@ai-workforce/core";
 
 export interface ClassifySeverityInput extends Record<string, unknown> {
-  releaseTitle: string;
-  releaseBody: string;
+  title: string;
+  description: string;
 }
 
 export interface SeverityClassification {

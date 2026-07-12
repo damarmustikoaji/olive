@@ -8,6 +8,7 @@ import type {
   ContentPiece,
   ContentPlatform,
   PromptVersion,
+  SupportTicket,
   Task,
   TaskCreatedBy,
   TaskEvent,
@@ -130,6 +131,11 @@ export interface TaskEventRepo {
   listByTask(taskId: string): Promise<TaskEvent[]>;
 }
 
+/** Read-only. See SupportTicket entity for why this never writes back. */
+export interface SupportTicketRepo {
+  listOpen(): Promise<SupportTicket[]>;
+}
+
 export interface RepositoryBundle {
   watchedRepositories: WatchedRepositoryRepo;
   taskRuns: TaskRunRepo;
@@ -140,4 +146,5 @@ export interface RepositoryBundle {
   promptVersions: PromptVersionRepo;
   aiInvocations: AiInvocationRepo;
   agentProfiles: AgentProfileRepo;
+  supportTickets: SupportTicketRepo;
 }

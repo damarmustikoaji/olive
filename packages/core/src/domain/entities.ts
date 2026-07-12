@@ -91,7 +91,7 @@ export type TaskStatus =
 
 export type TaskSeverity = "minor" | "medium" | "critical";
 export type TaskPriority = "low" | "medium" | "high";
-export type TaskSource = "github_release" | "github_issue" | "manual";
+export type TaskSource = "github_release" | "github_issue" | "manual" | "support_ticket";
 export type TaskCreatedBy = "system" | "owner";
 
 export interface Task {
@@ -140,6 +140,22 @@ export interface AgentProfile {
   status: AgentStatus;
   description: string;
   updatedAt: Date;
+}
+
+/**
+ * Read-only view of a row from public.support_tickets — a table owned by
+ * a different app (Sandbox), not by AI Workforce. We never write back to
+ * it; anything AI Workforce produces from a ticket lives in workforce.tasks
+ * / workforce.task_events instead.
+ */
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: Date;
 }
 
 export interface AgentUsageSummary {

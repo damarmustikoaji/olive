@@ -23,6 +23,9 @@ importers:
       '@ai-workforce/agent-marketing-content-writer':
         specifier: workspace:*
         version: link:../../packages/agents/marketing-content-writer
+      '@ai-workforce/agent-support':
+        specifier: workspace:*
+        version: link:../../packages/agents/support-agent
       '@ai-workforce/ai-provider':
         specifier: workspace:*
         version: link:../../packages/ai-provider
@@ -44,6 +47,9 @@ importers:
       '@ai-workforce/workflow-release-to-content':
         specifier: workspace:*
         version: link:../../packages/workflows/release-to-content
+      '@ai-workforce/workflow-support-ticket-task-source':
+        specifier: workspace:*
+        version: link:../../packages/workflows/support-ticket-task-source
       '@ai-workforce/workflow-workforce-manager':
         specifier: workspace:*
         version: link:../../packages/workflows/workforce-manager
@@ -111,6 +117,16 @@ importers:
         version: 5.9.3
 
   packages/agents/marketing-content-writer:
+    dependencies:
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/agents/support-agent:
     dependencies:
       '@ai-workforce/core':
         specifier: workspace:*
@@ -215,11 +231,24 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  packages/workflows/support-ticket-task-source:
+    dependencies:
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   packages/workflows/workforce-manager:
     dependencies:
       '@ai-workforce/agent-marketing-content-writer':
         specifier: workspace:*
         version: link:../../agents/marketing-content-writer
+      '@ai-workforce/agent-support':
+        specifier: workspace:*
+        version: link:../../agents/support-agent
       '@ai-workforce/core':
         specifier: workspace:*
         version: link:../../core
