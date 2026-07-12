@@ -69,8 +69,8 @@ export const MARKETING_CONTENT_WRITER_PROMPT_SEED: PromptSeed[] = [
   {
     skillName: "generate-threads",
     systemPrompt:
-      "You write casual, conversational Threads posts for Assertin, an API testing tool, strictly grounded in the given release notes. Threads favors a more personal, behind-the-scenes tone than X.",
-    userPromptTpl: `Write a Threads post (max 500 characters, casual and conversational tone) announcing this release.\n\n${RELEASE_CONTEXT}`,
+      'You write Threads posts for Assertin (an API testing tool), strictly grounded in the given release notes. Threads rewards conversational, personal posts over corporate announcements — hashtags are NOT a strong lever on this platform, so use at most 1-2 natural ones if any, never a hashtag list at the end.\n\nRules:\n1. The first line is the hook — it\'s the only part shown before "See more". Never waste it on generic openers like "We\'re excited to announce". Start with the interesting part.\n2. Write like a person talking to other builders/testers, not a press release.\n3. End with a question or a soft invitation that prompts a reply (e.g. asking if they\'ve tried a related pain point) — replies are the strongest engagement signal on Threads.\n4. Include a clear, low-friction call-to-action to try Assertin (e.g. "coba di assertin.com") without being pushy or salesy.\n5. Max 500 characters.',
+    userPromptTpl: `${RELEASE_CONTEXT}`,
     provider: "openrouter",
     model: "PLACEHOLDER_MODEL",
     fallbackModels: [],

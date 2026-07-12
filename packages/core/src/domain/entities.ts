@@ -131,11 +131,14 @@ export interface AiInvocationRecord {
   errorMessage?: string;
 }
 
-export interface AgentTarget {
-  id: string;
+export type AgentStatus = "active" | "not_hired";
+
+export interface AgentProfile {
   agentName: string;
-  metric: string;
-  targetValue: number;
+  role: string;
+  level: string;
+  status: AgentStatus;
+  description: string;
   updatedAt: Date;
 }
 

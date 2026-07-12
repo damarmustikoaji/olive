@@ -3,13 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { repositories } from "@/lib/repositories";
 
-export async function setAgentTarget(formData: FormData): Promise<void> {
+export async function updateAgentDescription(formData: FormData): Promise<void> {
   const agentName = String(formData.get("agentName"));
-  const metric = String(formData.get("metric"));
-  const targetValue = Number(formData.get("targetValue"));
+  const description = String(formData.get("description") ?? "");
 
-  if (!agentName || !metric || !Number.isFinite(targetValue) || targetValue < 0) return;
+  const existing = await repositories.agentProfiles.getByAgent(agentName);
+  if (!existing) return;
 
-  await repositories.agentTargets.upsert(agentName, metric, targetValue);
+  await repositories.agentProfiles.upsert({
+    agentName,
+    role: existing.role,
+    level: existing.level,
+    status: existing.status,
+    description,
+  });
+
   revalidatePath("/agents");
 }

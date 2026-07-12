@@ -8,7 +8,7 @@ import { ContentBatchRepo } from "./repositories/content-batch.repo.js";
 import { ContentPieceRepo } from "./repositories/content-piece.repo.js";
 import { PromptVersionRepo } from "./repositories/prompt-version.repo.js";
 import { AiInvocationRepo } from "./repositories/ai-invocation.repo.js";
-import { AgentTargetRepo } from "./repositories/agent-target.repo.js";
+import { AgentProfileRepo } from "./repositories/agent-profile.repo.js";
 
 /** Single place both apps/runner and apps/web call to get a fully wired RepositoryBundle. */
 export function buildRepositories(client: SupabaseClient): RepositoryBundle {
@@ -21,6 +21,6 @@ export function buildRepositories(client: SupabaseClient): RepositoryBundle {
     contentPieces: new ContentPieceRepo(client),
     promptVersions: new PromptVersionRepo(client),
     aiInvocations: new AiInvocationRepo(client),
-    agentTargets: new AgentTargetRepo(client),
+    agentProfiles: new AgentProfileRepo(client),
   };
 }
