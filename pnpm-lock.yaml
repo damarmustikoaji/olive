@@ -29,6 +29,9 @@ importers:
       '@ai-workforce/agent-marketing-content-writer':
         specifier: workspace:*
         version: link:../../packages/agents/marketing-content-writer
+      '@ai-workforce/agent-research':
+        specifier: workspace:*
+        version: link:../../packages/agents/research-agent
       '@ai-workforce/agent-support':
         specifier: workspace:*
         version: link:../../packages/agents/support-agent
@@ -44,6 +47,9 @@ importers:
       '@ai-workforce/integration-github':
         specifier: workspace:*
         version: link:../../packages/integrations/github
+      '@ai-workforce/integration-tavily':
+        specifier: workspace:*
+        version: link:../../packages/integrations/tavily
       '@ai-workforce/integration-threads':
         specifier: workspace:*
         version: link:../../packages/integrations/threads
@@ -59,6 +65,9 @@ importers:
       '@ai-workforce/workflow-release-to-content':
         specifier: workspace:*
         version: link:../../packages/workflows/release-to-content
+      '@ai-workforce/workflow-research-agent':
+        specifier: workspace:*
+        version: link:../../packages/workflows/research-agent
       '@ai-workforce/workflow-support-ticket-task-source':
         specifier: workspace:*
         version: link:../../packages/workflows/support-ticket-task-source
@@ -164,6 +173,19 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  packages/agents/research-agent:
+    dependencies:
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-tavily':
+        specifier: workspace:*
+        version: link:../../integrations/tavily
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   packages/agents/support-agent:
     dependencies:
       '@ai-workforce/core':
@@ -214,6 +236,16 @@ importers:
         version: 5.9.3
 
   packages/integrations/github:
+    dependencies:
+      '@ai-workforce/shared':
+        specifier: workspace:*
+        version: link:../../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/integrations/tavily:
     dependencies:
       '@ai-workforce/shared':
         specifier: workspace:*
@@ -296,6 +328,22 @@ importers:
       '@ai-workforce/integration-github':
         specifier: workspace:*
         version: link:../../integrations/github
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/workflows/research-agent:
+    dependencies:
+      '@ai-workforce/agent-research':
+        specifier: workspace:*
+        version: link:../../agents/research-agent
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-tavily':
+        specifier: workspace:*
+        version: link:../../integrations/tavily
     devDependencies:
       typescript:
         specifier: ^5.6.0

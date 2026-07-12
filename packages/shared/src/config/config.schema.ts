@@ -24,6 +24,10 @@ export const configSchema = z.object({
   CODE_INVESTIGATOR_REPO_OWNER: z.string().default("damarmustikoaji"),
   CODE_INVESTIGATOR_REPO_NAME: z.string().default("forge-mango"),
 
+  // Optional: only needed for Research Agent's daily web search. Left unset,
+  // the workflow just doesn't register — no search, no wasted AI summary call.
+  TAVILY_API_KEY: z.string().optional(),
+
   MAX_TASK_ATTEMPTS: z.coerce.number().int().positive().default(3),
   WORK_HOURS_START: z.string().regex(/^\d{2}:\d{2}$/).default("09:00"),
   WORK_HOURS_END: z.string().regex(/^\d{2}:\d{2}$/).default("17:00"),

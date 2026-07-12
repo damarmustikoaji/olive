@@ -7,6 +7,8 @@ import { SupportTicketTaskSourceWorkflow } from "@ai-workforce/workflow-support-
 import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manager";
 import { CodeInvestigatorWorkflow } from "@ai-workforce/workflow-code-investigator";
 import { InsightAgentWorkflow } from "@ai-workforce/workflow-insight-agent";
+import { TavilyClient } from "@ai-workforce/integration-tavily";
+import { ResearchAgentWorkflow } from "@ai-workforce/workflow-research-agent";
 
 /**
  * The one file that needs to change when a new agent/workflow is added.
@@ -40,6 +42,11 @@ export function registerWorkflows(config: Config): void {
   // without them there's nothing published to track yet, so skip registering.
   if (threadsClient) {
     WorkflowRegistry.register(new InsightAgentWorkflow(threadsClient));
+  }
+  // Same pattern: no Tavily key means no search, so skip registering rather
+  // than fail every shift trying to call an API with no credentials.
+  if (config.TAVILY_API_KEY) {
+    WorkflowRegistry.register(new ResearchAgentWorkflow(new TavilyClient(config.TAVILY_API_KEY)));
   }
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }
