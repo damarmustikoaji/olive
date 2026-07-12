@@ -8,6 +8,11 @@ export const configSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1),
   OPENROUTER_DEFAULT_MODEL: z.string().min(1),
 
+  // Optional: emergency fallback if OpenRouter itself is down/rate-limited
+  // (not just one model). Left unset, a fully-OpenRouter outage just fails
+  // the task for retry next shift instead of falling over to Groq.
+  GROQ_API_KEY: z.string().optional(),
+
   GH_TOKEN: z.string().min(1),
 
   // Optional: only needed for the Manager's auto-publish-on-approval path.

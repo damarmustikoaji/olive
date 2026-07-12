@@ -9,6 +9,8 @@ export const env = {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: required("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
   SUPABASE_SERVICE_ROLE_KEY: required("SUPABASE_SERVICE_ROLE_KEY"),
   OPENROUTER_API_KEY: required("OPENROUTER_API_KEY"),
+  // Optional: emergency fallback if OpenRouter itself is down/rate-limited.
+  GROQ_API_KEY: process.env.GROQ_API_KEY,
   // Optional: only needed for the "Publish to X" action. Left unset, that
   // button fails with a clear error instead of crashing the whole app at boot.
   X_API_KEY: process.env.X_API_KEY,
