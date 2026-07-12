@@ -130,3 +130,17 @@ export interface AiInvocationRecord {
   status: "success" | "failed" | "retried";
   errorMessage?: string;
 }
+
+export interface AgentTarget {
+  id: string;
+  agentName: string;
+  metric: string;
+  targetValue: number;
+  updatedAt: Date;
+}
+
+export interface AgentUsageSummary {
+  invocationCount: number;
+  inputTokens: number;
+  outputTokens: number;
+}

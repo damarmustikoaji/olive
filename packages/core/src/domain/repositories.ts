@@ -1,4 +1,6 @@
 import type {
+  AgentTarget,
+  AgentUsageSummary,
   AiInvocationRecord,
   ContentBatch,
   ContentBatchStatus,
@@ -74,6 +76,12 @@ export interface PromptVersionRepo {
 
 export interface AiInvocationRepo {
   record(entry: AiInvocationRecord): Promise<void>;
+  sumUsageByAgent(agentName: string, sinceDate?: Date): Promise<AgentUsageSummary>;
+}
+
+export interface AgentTargetRepo {
+  getByAgent(agentName: string): Promise<AgentTarget[]>;
+  upsert(agentName: string, metric: string, targetValue: number): Promise<AgentTarget>;
 }
 
 /**
@@ -123,4 +131,5 @@ export interface RepositoryBundle {
   contentPieces: ContentPieceRepo;
   promptVersions: PromptVersionRepo;
   aiInvocations: AiInvocationRepo;
+  agentTargets: AgentTargetRepo;
 }
