@@ -105,6 +105,7 @@ export interface WorkTaskRepo {
   listAll(limit?: number): Promise<Task[]>;
   assign(id: string, assigneeAgent: string): Promise<void>;
   updateStatus(id: string, status: TaskStatus): Promise<void>;
+  updateSeverity(id: string, severity: TaskSeverity): Promise<void>;
   linkContentBatch(id: string, contentBatchId: string): Promise<void>;
 }
 

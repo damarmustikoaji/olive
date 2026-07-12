@@ -1,6 +1,7 @@
 import { WorkflowRegistry } from "@ai-workforce/core";
 import type { Config } from "@ai-workforce/shared";
 import { GithubReleaseClient } from "@ai-workforce/integration-github";
+import { ThreadsClient } from "@ai-workforce/integration-threads";
 import { GithubReleaseTaskSourceWorkflow } from "@ai-workforce/workflow-release-to-content";
 import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manager";
 
@@ -16,7 +17,14 @@ import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manag
 export function registerWorkflows(config: Config): void {
   const githubClient = new GithubReleaseClient(config.GH_TOKEN);
 
+  // Optional — the Manager still auto-approves non-critical tasks without
+  // this, it just can't actually publish anywhere until credentials exist.
+  const threadsClient =
+    config.THREADS_USER_ID && config.THREADS_ACCESS_TOKEN
+      ? new ThreadsClient({ userId: config.THREADS_USER_ID, accessToken: config.THREADS_ACCESS_TOKEN })
+      : undefined;
+
   WorkflowRegistry.register(new GithubReleaseTaskSourceWorkflow(githubClient));
-  WorkflowRegistry.register(new WorkforceManagerWorkflow());
+  WorkflowRegistry.register(new WorkforceManagerWorkflow(threadsClient));
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }

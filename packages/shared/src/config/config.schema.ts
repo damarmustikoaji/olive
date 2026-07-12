@@ -10,6 +10,11 @@ export const configSchema = z.object({
 
   GH_TOKEN: z.string().min(1),
 
+  // Optional: only needed for the Manager's auto-publish-on-approval path.
+  // Left unset, non-critical tasks still auto-approve but skip publishing.
+  THREADS_USER_ID: z.string().optional(),
+  THREADS_ACCESS_TOKEN: z.string().optional(),
+
   MAX_TASK_ATTEMPTS: z.coerce.number().int().positive().default(3),
   WORK_HOURS_START: z.string().regex(/^\d{2}:\d{2}$/).default("09:00"),
   WORK_HOURS_END: z.string().regex(/^\d{2}:\d{2}$/).default("17:00"),

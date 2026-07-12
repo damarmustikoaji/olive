@@ -12,6 +12,7 @@
     { "path": "../../packages/db" },
     { "path": "../../packages/ai-provider" },
     { "path": "../../packages/integrations/github" },
+    { "path": "../../packages/integrations/threads" },
     { "path": "../../packages/workflows/release-to-content" },
     { "path": "../../packages/workflows/workforce-manager" },
     { "path": "../../packages/agents/marketing-content-writer" }

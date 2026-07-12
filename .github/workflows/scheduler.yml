@@ -43,6 +43,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_DEFAULT_MODEL: ${{ secrets.OPENROUTER_DEFAULT_MODEL }}
           GH_TOKEN: ${{ secrets.GH_RELEASE_READ_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           FORCE_RUN: ${{ inputs.force_run }}
           MAX_TASK_ATTEMPTS: "3"
           WORK_HOURS_START: "09:00"

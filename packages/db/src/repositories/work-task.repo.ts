@@ -156,6 +156,11 @@ export class WorkTaskRepo implements IWorkTaskRepo {
     if (error) throw new DatabaseError("updateStatus task failed", error);
   }
 
+  async updateSeverity(id: string, severity: TaskSeverity): Promise<void> {
+    const { error } = await this.client.from("tasks").update({ severity }).eq("id", id);
+    if (error) throw new DatabaseError("updateSeverity task failed", error);
+  }
+
   async linkContentBatch(id: string, contentBatchId: string): Promise<void> {
     const { error } = await this.client
       .from("tasks")
