@@ -20,6 +20,10 @@ export const configSchema = z.object({
   THREADS_USER_ID: z.string().optional(),
   THREADS_ACCESS_TOKEN: z.string().optional(),
 
+  // Which repo Code Investigator reads when analyzing a bug ticket.
+  CODE_INVESTIGATOR_REPO_OWNER: z.string().default("damarmustikoaji"),
+  CODE_INVESTIGATOR_REPO_NAME: z.string().default("forge-mango"),
+
   MAX_TASK_ATTEMPTS: z.coerce.number().int().positive().default(3),
   WORK_HOURS_START: z.string().regex(/^\d{2}:\d{2}$/).default("09:00"),
   WORK_HOURS_END: z.string().regex(/^\d{2}:\d{2}$/).default("17:00"),

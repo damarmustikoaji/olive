@@ -16,7 +16,9 @@
     { "path": "../../packages/workflows/release-to-content" },
     { "path": "../../packages/workflows/support-ticket-task-source" },
     { "path": "../../packages/workflows/workforce-manager" },
+    { "path": "../../packages/workflows/code-investigator" },
     { "path": "../../packages/agents/marketing-content-writer" },
-    { "path": "../../packages/agents/support-agent" }
+    { "path": "../../packages/agents/support-agent" },
+    { "path": "../../packages/agents/code-investigator" }
   ]
 }

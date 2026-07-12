@@ -20,6 +20,9 @@ importers:
 
   apps/runner:
     dependencies:
+      '@ai-workforce/agent-code-investigator':
+        specifier: workspace:*
+        version: link:../../packages/agents/code-investigator
       '@ai-workforce/agent-marketing-content-writer':
         specifier: workspace:*
         version: link:../../packages/agents/marketing-content-writer
@@ -44,6 +47,9 @@ importers:
       '@ai-workforce/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@ai-workforce/workflow-code-investigator':
+        specifier: workspace:*
+        version: link:../../packages/workflows/code-investigator
       '@ai-workforce/workflow-release-to-content':
         specifier: workspace:*
         version: link:../../packages/workflows/release-to-content
@@ -112,6 +118,19 @@ importers:
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/agents/code-investigator:
+    dependencies:
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-github':
+        specifier: workspace:*
+        version: link:../../integrations/github
+    devDependencies:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
@@ -213,6 +232,22 @@ importers:
       zod:
         specifier: ^3.23.0
         version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/workflows/code-investigator:
+    dependencies:
+      '@ai-workforce/agent-code-investigator':
+        specifier: workspace:*
+        version: link:../../agents/code-investigator
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-github':
+        specifier: workspace:*
+        version: link:../../integrations/github
     devDependencies:
       typescript:
         specifier: ^5.6.0

@@ -1,10 +1,11 @@
 import { WorkflowRegistry } from "@ai-workforce/core";
 import type { Config } from "@ai-workforce/shared";
-import { GithubReleaseClient } from "@ai-workforce/integration-github";
+import { GithubReleaseClient, GithubRepoClient } from "@ai-workforce/integration-github";
 import { ThreadsClient } from "@ai-workforce/integration-threads";
 import { GithubReleaseTaskSourceWorkflow } from "@ai-workforce/workflow-release-to-content";
 import { SupportTicketTaskSourceWorkflow } from "@ai-workforce/workflow-support-ticket-task-source";
 import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manager";
+import { CodeInvestigatorWorkflow } from "@ai-workforce/workflow-code-investigator";
 
 /**
  * The one file that needs to change when a new agent/workflow is added.
@@ -12,11 +13,14 @@ import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manag
  *
  * Order matters within a single shift: task sources run first (turning
  * external events into backlog items), then the Manager picks up whatever
- * just landed. Both still run every shift — this isn't a strict pipeline,
- * just a sensible default ordering.
+ * just landed, then Code Investigator adds a second opinion on any bug
+ * tickets the Manager/Support Agent already escalated. Every workflow still
+ * runs every shift — this isn't a strict pipeline, just a sensible default
+ * ordering that lets a task move as far forward as possible in one run.
  */
 export function registerWorkflows(config: Config): void {
   const githubClient = new GithubReleaseClient(config.GH_TOKEN);
+  const githubRepoClient = new GithubRepoClient(config.GH_TOKEN);
 
   // Optional — the Manager still auto-approves non-critical tasks without
   // this, it just can't actually publish anywhere until credentials exist.
@@ -28,5 +32,8 @@ export function registerWorkflows(config: Config): void {
   WorkflowRegistry.register(new GithubReleaseTaskSourceWorkflow(githubClient));
   WorkflowRegistry.register(new SupportTicketTaskSourceWorkflow());
   WorkflowRegistry.register(new WorkforceManagerWorkflow(threadsClient));
+  WorkflowRegistry.register(
+    new CodeInvestigatorWorkflow(githubRepoClient, config.CODE_INVESTIGATOR_REPO_OWNER, config.CODE_INVESTIGATOR_REPO_NAME),
+  );
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }
