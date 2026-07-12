@@ -6,6 +6,7 @@ import { GithubReleaseTaskSourceWorkflow } from "@ai-workforce/workflow-release-
 import { SupportTicketTaskSourceWorkflow } from "@ai-workforce/workflow-support-ticket-task-source";
 import { WorkforceManagerWorkflow } from "@ai-workforce/workflow-workforce-manager";
 import { CodeInvestigatorWorkflow } from "@ai-workforce/workflow-code-investigator";
+import { InsightAgentWorkflow } from "@ai-workforce/workflow-insight-agent";
 
 /**
  * The one file that needs to change when a new agent/workflow is added.
@@ -35,5 +36,10 @@ export function registerWorkflows(config: Config): void {
   WorkflowRegistry.register(
     new CodeInvestigatorWorkflow(githubRepoClient, config.CODE_INVESTIGATOR_REPO_OWNER, config.CODE_INVESTIGATOR_REPO_NAME),
   );
+  // Insight Agent needs real Threads credentials to have anything to fetch —
+  // without them there's nothing published to track yet, so skip registering.
+  if (threadsClient) {
+    WorkflowRegistry.register(new InsightAgentWorkflow(threadsClient));
+  }
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }

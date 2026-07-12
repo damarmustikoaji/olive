@@ -10,6 +10,14 @@ export interface PostThreadResult {
   url: string;
 }
 
+export interface MediaInsights {
+  views: number;
+  likes: number;
+  replies: number;
+  reposts: number;
+  quotes: number;
+}
+
 const BASE_URL = "https://graph.threads.net/v1.0";
 
 /**
@@ -61,6 +69,35 @@ export class ThreadsClient {
 
       const data = (await response.json()) as { id: string };
       return data.id;
+    });
+  }
+
+  /** Per-post metrics — not available until a few minutes after publish. */
+  async getMediaInsights(mediaId: string): Promise<MediaInsights> {
+    return withRetry(async () => {
+      const url = new URL(`${BASE_URL}/${mediaId}/insights`);
+      url.searchParams.set("metrics", "views,likes,replies,reposts,quotes");
+      url.searchParams.set("access_token", this.credentials.accessToken);
+
+      const response = await fetch(url);
+      if (response.status >= 500) throw new TransientHttpError("threads:insights");
+      if (!response.ok) {
+        throw new Error(`Threads insights failed (${response.status}): ${await response.text()}`);
+      }
+
+      const data = (await response.json()) as { data: { name: string; values?: { value: number }[]; total_value?: { value: number } }[] };
+      const metric = (name: string) => {
+        const entry = data.data.find((d) => d.name === name);
+        return entry?.total_value?.value ?? entry?.values?.[0]?.value ?? 0;
+      };
+
+      return {
+        views: metric("views"),
+        likes: metric("likes"),
+        replies: metric("replies"),
+        reposts: metric("reposts"),
+        quotes: metric("quotes"),
+      };
     });
   }
 

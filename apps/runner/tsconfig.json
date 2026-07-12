@@ -17,8 +17,10 @@
     { "path": "../../packages/workflows/support-ticket-task-source" },
     { "path": "../../packages/workflows/workforce-manager" },
     { "path": "../../packages/workflows/code-investigator" },
+    { "path": "../../packages/workflows/insight-agent" },
     { "path": "../../packages/agents/marketing-content-writer" },
     { "path": "../../packages/agents/support-agent" },
-    { "path": "../../packages/agents/code-investigator" }
+    { "path": "../../packages/agents/code-investigator" },
+    { "path": "../../packages/agents/insight-agent" }
   ]
 }

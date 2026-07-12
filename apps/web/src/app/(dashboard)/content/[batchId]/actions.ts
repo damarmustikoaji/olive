@@ -57,7 +57,7 @@ export async function publishToX(pieceId: string, batchId: string): Promise<void
   });
 
   const result = await client.postTweet(piece.content);
-  await repositories.contentPieces.markPublished(pieceId, result.url);
+  await repositories.contentPieces.markPublished(pieceId, result.url, result.id);
 
   revalidatePath(`/content/${batchId}`);
 }
@@ -81,7 +81,7 @@ export async function publishToThreads(pieceId: string, batchId: string): Promis
   });
 
   const result = await client.postThread(piece.content);
-  await repositories.contentPieces.markPublished(pieceId, result.url);
+  await repositories.contentPieces.markPublished(pieceId, result.url, result.id);
 
   revalidatePath(`/content/${batchId}`);
 }

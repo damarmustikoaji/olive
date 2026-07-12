@@ -178,7 +178,7 @@ export class WorkforceManagerWorkflow implements Workflow {
       if (threadsPiece) {
         try {
           const result = await this.threadsClient.postThread(threadsPiece.content);
-          await ctx.repositories.contentPieces.markPublished(threadsPiece.id, result.url);
+          await ctx.repositories.contentPieces.markPublished(threadsPiece.id, result.url, result.id);
           await ctx.repositories.taskEvents.record(task.id, "auto_published_to_threads", { url: result.url });
         } catch (err) {
           ctx.logger.error("auto-publish to threads failed", { taskId: task.id, error: String(err) });

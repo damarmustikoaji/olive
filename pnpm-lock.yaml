@@ -23,6 +23,9 @@ importers:
       '@ai-workforce/agent-code-investigator':
         specifier: workspace:*
         version: link:../../packages/agents/code-investigator
+      '@ai-workforce/agent-insight':
+        specifier: workspace:*
+        version: link:../../packages/agents/insight-agent
       '@ai-workforce/agent-marketing-content-writer':
         specifier: workspace:*
         version: link:../../packages/agents/marketing-content-writer
@@ -50,6 +53,9 @@ importers:
       '@ai-workforce/workflow-code-investigator':
         specifier: workspace:*
         version: link:../../packages/workflows/code-investigator
+      '@ai-workforce/workflow-insight-agent':
+        specifier: workspace:*
+        version: link:../../packages/workflows/insight-agent
       '@ai-workforce/workflow-release-to-content':
         specifier: workspace:*
         version: link:../../packages/workflows/release-to-content
@@ -130,6 +136,19 @@ importers:
       '@ai-workforce/integration-github':
         specifier: workspace:*
         version: link:../../integrations/github
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/agents/insight-agent:
+    dependencies:
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-threads':
+        specifier: workspace:*
+        version: link:../../integrations/threads
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -248,6 +267,22 @@ importers:
       '@ai-workforce/integration-github':
         specifier: workspace:*
         version: link:../../integrations/github
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/workflows/insight-agent:
+    dependencies:
+      '@ai-workforce/agent-insight':
+        specifier: workspace:*
+        version: link:../../agents/insight-agent
+      '@ai-workforce/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@ai-workforce/integration-threads':
+        specifier: workspace:*
+        version: link:../../integrations/threads
     devDependencies:
       typescript:
         specifier: ^5.6.0

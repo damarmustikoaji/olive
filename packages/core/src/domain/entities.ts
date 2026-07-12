@@ -57,7 +57,23 @@ export interface ContentPiece {
   reviewedAt: Date | null;
   publishedAt: Date | null;
   publishedUrl: string | null;
+  publishedMediaId: string | null;
   createdAt: Date;
+}
+
+/**
+ * One daily metrics snapshot for a published piece (not overwritten), so
+ * growth over time is visible rather than only the latest total.
+ */
+export interface ContentInsight {
+  id: string;
+  contentPieceId: string;
+  views: number;
+  likes: number;
+  replies: number;
+  reposts: number;
+  quotes: number;
+  fetchedAt: Date;
 }
 
 export interface PromptVersion {

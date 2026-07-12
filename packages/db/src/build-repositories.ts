@@ -6,6 +6,7 @@ import { WorkTaskRepo } from "./repositories/work-task.repo.js";
 import { TaskEventRepo } from "./repositories/task-event.repo.js";
 import { ContentBatchRepo } from "./repositories/content-batch.repo.js";
 import { ContentPieceRepo } from "./repositories/content-piece.repo.js";
+import { ContentInsightRepo } from "./repositories/content-insight.repo.js";
 import { PromptVersionRepo } from "./repositories/prompt-version.repo.js";
 import { AiInvocationRepo } from "./repositories/ai-invocation.repo.js";
 import { AgentProfileRepo } from "./repositories/agent-profile.repo.js";
@@ -28,6 +29,7 @@ export function buildRepositories(url: string, serviceRoleKey: string): Reposito
     taskEvents: new TaskEventRepo(workforceClient),
     contentBatches: new ContentBatchRepo(workforceClient),
     contentPieces: new ContentPieceRepo(workforceClient),
+    contentInsights: new ContentInsightRepo(workforceClient),
     promptVersions: new PromptVersionRepo(workforceClient),
     aiInvocations: new AiInvocationRepo(workforceClient),
     agentProfiles: new AgentProfileRepo(workforceClient),

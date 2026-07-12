@@ -18,6 +18,7 @@ interface Row {
   reviewed_at: string | null;
   published_at: string | null;
   published_url: string | null;
+  published_media_id: string | null;
   created_at: string;
 }
 
@@ -34,6 +35,7 @@ function toDomain(row: Row): ContentPiece {
     reviewedAt: row.reviewed_at ? new Date(row.reviewed_at) : null,
     publishedAt: row.published_at ? new Date(row.published_at) : null,
     publishedUrl: row.published_url,
+    publishedMediaId: row.published_media_id,
     createdAt: new Date(row.created_at),
   };
 }
@@ -107,10 +109,14 @@ export class ContentPieceRepo implements IContentPieceRepo {
     if (error) throw new DatabaseError("update content_piece failed", error);
   }
 
-  async markPublished(id: string, publishedUrl: string): Promise<void> {
+  async markPublished(id: string, publishedUrl: string, publishedMediaId: string): Promise<void> {
     const { error } = await this.client
       .from("content_pieces")
-      .update({ published_at: new Date().toISOString(), published_url: publishedUrl })
+      .update({
+        published_at: new Date().toISOString(),
+        published_url: publishedUrl,
+        published_media_id: publishedMediaId,
+      })
       .eq("id", id);
 
     if (error) throw new DatabaseError("markPublished content_piece failed", error);
@@ -124,6 +130,25 @@ export class ContentPieceRepo implements IContentPieceRepo {
       .order("platform", { ascending: true });
 
     if (error) throw new DatabaseError("listByBatch content_pieces failed", error);
+    return (data as Row[]).map(toDomain);
+  }
+
+  async listPublishedWithMediaId(params: {
+    platform: ContentPlatform;
+    sincePublishedAt?: Date;
+  }): Promise<ContentPiece[]> {
+    let query = this.client
+      .from("content_pieces")
+      .select("*")
+      .eq("platform", params.platform)
+      .not("published_media_id", "is", null);
+
+    if (params.sincePublishedAt) {
+      query = query.gte("published_at", params.sincePublishedAt.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw new DatabaseError("listPublishedWithMediaId content_pieces failed", error);
     return (data as Row[]).map(toDomain);
   }
 }

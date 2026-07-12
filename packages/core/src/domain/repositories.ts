@@ -5,6 +5,7 @@ import type {
   AiInvocationRecord,
   ContentBatch,
   ContentBatchStatus,
+  ContentInsight,
   ContentPiece,
   ContentPlatform,
   PromptVersion,
@@ -68,8 +69,22 @@ export interface ContentPieceRepo {
     id: string,
     fields: Partial<Pick<ContentPiece, "content" | "reviewedAt" | "reviewedBy">>,
   ): Promise<void>;
-  markPublished(id: string, publishedUrl: string): Promise<void>;
+  markPublished(id: string, publishedUrl: string, publishedMediaId: string): Promise<void>;
   listByBatch(contentBatchId: string): Promise<ContentPiece[]>;
+  /** Pieces with a media id to fetch insights for — published, on a platform with an Insights API. */
+  listPublishedWithMediaId(params: { platform: ContentPlatform; sincePublishedAt?: Date }): Promise<ContentPiece[]>;
+}
+
+export interface ContentInsightRepo {
+  record(input: {
+    contentPieceId: string;
+    views: number;
+    likes: number;
+    replies: number;
+    reposts: number;
+    quotes: number;
+  }): Promise<ContentInsight>;
+  listByContentPiece(contentPieceId: string): Promise<ContentInsight[]>;
 }
 
 export interface PromptVersionRepo {
@@ -143,6 +158,7 @@ export interface RepositoryBundle {
   taskEvents: TaskEventRepo;
   contentBatches: ContentBatchRepo;
   contentPieces: ContentPieceRepo;
+  contentInsights: ContentInsightRepo;
   promptVersions: PromptVersionRepo;
   aiInvocations: AiInvocationRepo;
   agentProfiles: AgentProfileRepo;
