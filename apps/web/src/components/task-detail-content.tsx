@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
-import { analyzeTaskImage, approveTask, extractImageUrl, markTaskDone, rejectTask } from "@/lib/task-actions";
+import { analyzeTaskImage, approveTask, markTaskDone, rejectTask } from "@/lib/task-actions";
+import { extractImageUrl } from "@/lib/task-image";
 import { MarkdownContent } from "./markdown-content";
 
 export async function TaskDetailContent({ taskId }: { taskId: string }) {
