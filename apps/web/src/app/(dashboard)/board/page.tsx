@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { repositories } from "@/lib/repositories";
+import { env } from "@/lib/env";
 import { createManualTask } from "./actions";
 import { AgentFilter } from "./agent-filter";
+import { DescriptionWithImage } from "./description-with-image";
 import type { Task, TaskStatus } from "@ai-workforce/core";
 
 const COLUMNS: { status: TaskStatus; label: string }[] = [
@@ -81,12 +83,19 @@ export default async function BoardPage({
             required
             className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
           />
-          <textarea
-            name="description"
-            placeholder="Deskripsi (opsional)"
-            rows={3}
-            className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
-          />
+          {env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_UPLOAD_PRESET ? (
+            <DescriptionWithImage
+              cloudName={env.CLOUDINARY_CLOUD_NAME}
+              uploadPreset={env.CLOUDINARY_UPLOAD_PRESET}
+            />
+          ) : (
+            <textarea
+              name="description"
+              placeholder="Deskripsi (opsional)"
+              rows={3}
+              className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
+            />
+          )}
           <div className="flex gap-4">
             <label className="space-y-1 text-xs text-neutral-400">
               Severity

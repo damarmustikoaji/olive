@@ -22,11 +22,14 @@ export abstract class PromptDrivenSkill<TInput extends Record<string, unknown>, 
     const promptVersion = await ctx.repositories.promptVersions.getActive(this.agentName, this.name);
     const userPrompt = renderTemplate(promptVersion.userPromptTpl, input);
 
+    const imageUrl = typeof input.imageUrl === "string" ? input.imageUrl : undefined;
+
     const result = await ctx.aiProvider.complete({
       systemPrompt: promptVersion.systemPrompt,
       userPrompt,
       primaryModel: promptVersion.model,
       fallbackModels: promptVersion.fallbackModels,
+      imageUrl,
     });
 
     await ctx.repositories.aiInvocations.record({

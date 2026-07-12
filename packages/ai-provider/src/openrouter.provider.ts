@@ -43,6 +43,13 @@ export class OpenRouterProvider implements AiProvider {
   private async callModel(model: string, request: ChatCompletionRequest): Promise<ChatCompletionResult> {
     const startedAt = Date.now();
 
+    const userContent = request.imageUrl
+      ? [
+          { type: "text", text: request.userPrompt },
+          { type: "image_url", image_url: { url: request.imageUrl } },
+        ]
+      : request.userPrompt;
+
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -53,7 +60,7 @@ export class OpenRouterProvider implements AiProvider {
         model,
         messages: [
           { role: "system", content: request.systemPrompt },
-          { role: "user", content: request.userPrompt },
+          { role: "user", content: userContent },
         ],
       }),
     });

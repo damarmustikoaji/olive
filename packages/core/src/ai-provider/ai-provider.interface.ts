@@ -5,6 +5,8 @@ export interface ChatCompletionRequest {
   primaryModel: string;
   /** Tried in order if primaryModel is rate-limited/unavailable. */
   fallbackModels?: string[];
+  /** Vision input — only OpenRouterProvider honors this; primaryModel must be a vision-capable model. */
+  imageUrl?: string;
 }
 
 export interface ChatCompletionUsage {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
-import { approveTask, markTaskDone, rejectTask } from "@/lib/task-actions";
+import { analyzeTaskImage, approveTask, extractImageUrl, markTaskDone, rejectTask } from "@/lib/task-actions";
 import { MarkdownContent } from "./markdown-content";
 
 export async function TaskDetailContent({ taskId }: { taskId: string }) {
@@ -9,6 +9,8 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
   if (!task) notFound();
 
   const events = await repositories.taskEvents.listByTask(taskId);
+  const hasImage = !!extractImageUrl(task.description);
+  const alreadyAnalyzed = events.some((e) => e.event === "image_analyzed");
 
   return (
     <div className="space-y-6">
@@ -29,6 +31,17 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
         <Field label="Assigned to" value={task.assigneeAgent ?? "-"} />
         <Field label="Created by" value={task.createdBy} />
       </div>
+
+      {hasImage && !alreadyAnalyzed && (
+        <form action={analyzeTaskImage.bind(null, task.id)}>
+          <button
+            type="submit"
+            className="rounded border border-neutral-700 px-3 py-1.5 text-sm hover:bg-neutral-900"
+          >
+            🔍 Analisa Gambar (AI)
+          </button>
+        </form>
+      )}
 
       {task.contentBatchId && (
         <Link
