@@ -7,11 +7,10 @@ interface Payload {
 }
 
 /**
- * Unlike the other task sources, this workflow both creates and finishes the
- * task in one shift: search + AI summary is a single atomic unit of work,
- * there's no separate specialist to hand off to. The task lands directly at
- * ready_for_review — it's a recommendation for the Owner to read, not
- * something the Manager should triage or auto-approve on its own.
+ * A task source, not a specialist — same role as the release/support-ticket
+ * workflows. It only produces the raw material (a digest); the Manager then
+ * routes it to Marketing like any other backlog item, so a research idea can
+ * turn into actual published content instead of just a report nobody acts on.
  */
 export class ResearchAgentWorkflow implements Workflow {
   readonly name = "research-agent";
@@ -36,18 +35,18 @@ export class ResearchAgentWorkflow implements Workflow {
     const agent = new ResearchAgent(this.tavilyClient);
     const result = await agent.run({}, ctx);
 
+    // Left in "backlog" deliberately — the Manager classifies severity and
+    // routes it to Marketing like any other task source, rather than this
+    // workflow deciding that itself.
     const task = await ctx.repositories.tasks.getOrCreateBySourceRef({
       title: `Riset harian — ide pengembangan & promo (${date})`,
       description: result.digest,
       source: "research",
       sourceRef: date,
-      severity: "minor",
       priority: "low",
       payload: { sourcesChecked: result.sourcesChecked },
     });
 
-    await ctx.repositories.tasks.assign(task.id, "research-agent");
-    await ctx.repositories.tasks.updateStatus(task.id, "ready_for_review");
     await ctx.repositories.taskEvents.record(task.id, "research_completed", {
       sourcesChecked: result.sourcesChecked,
     });

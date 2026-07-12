@@ -41,7 +41,7 @@ export interface TaskRunRepo {
 export interface ContentBatchRepo {
   create(input: {
     taskRunId: string;
-    repositoryId: string;
+    repositoryId?: string;
     releaseTag: string;
     releaseTitle: string;
     releaseBody: string;

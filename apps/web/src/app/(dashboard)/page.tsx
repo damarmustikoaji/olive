@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { repositories } from "@/lib/repositories";
+import { DailyDigest, startOfToday } from "./daily-digest";
 
 export default async function OverviewPage() {
-  const [recentBatches, recentRuns] = await Promise.all([
+  const [recentBatches, recentRuns, allTasks, publishedTodayThreads] = await Promise.all([
     repositories.contentBatches.listRecent({ limit: 5 }),
     repositories.taskRuns.listRecent(5),
+    repositories.tasks.listAll(200),
+    repositories.contentPieces.listPublishedWithMediaId({
+      platform: "threads",
+      sincePublishedAt: startOfToday(),
+    }),
   ]);
 
   const failedRuns = recentRuns.filter((r) => r.status === "failed");
@@ -21,6 +27,8 @@ export default async function OverviewPage() {
           </Link>
         </div>
       )}
+
+      <DailyDigest allTasks={allTasks} publishedTodayThreadsCount={publishedTodayThreads.length} />
 
       <section>
         <h2 className="mb-2 text-sm font-medium text-neutral-400">Content batch terbaru</h2>

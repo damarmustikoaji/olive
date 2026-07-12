@@ -9,7 +9,7 @@ import { DatabaseError } from "../database-error.js";
 interface Row {
   id: string;
   task_run_id: string;
-  repository_id: string;
+  repository_id: string | null;
   release_tag: string;
   release_title: string | null;
   release_body: string | null;
@@ -35,7 +35,7 @@ export class ContentBatchRepo implements IContentBatchRepo {
 
   async create(input: {
     taskRunId: string;
-    repositoryId: string;
+    repositoryId?: string;
     releaseTag: string;
     releaseTitle: string;
     releaseBody: string;
@@ -44,7 +44,7 @@ export class ContentBatchRepo implements IContentBatchRepo {
       .from("content_batches")
       .insert({
         task_run_id: input.taskRunId,
-        repository_id: input.repositoryId,
+        repository_id: input.repositoryId ?? null,
         release_tag: input.releaseTag,
         release_title: input.releaseTitle,
         release_body: input.releaseBody,

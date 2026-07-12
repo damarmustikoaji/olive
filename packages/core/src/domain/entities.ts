@@ -27,7 +27,8 @@ export type ContentBatchStatus = "draft" | "ready" | "published" | "rejected";
 export interface ContentBatch {
   id: string;
   taskRunId: string;
-  repositoryId: string;
+  /** Null when the batch's source isn't a GitHub release (e.g. a Research Agent idea). */
+  repositoryId: string | null;
   releaseTag: string;
   releaseTitle: string | null;
   releaseBody: string | null;

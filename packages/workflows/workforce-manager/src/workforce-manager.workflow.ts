@@ -122,22 +122,22 @@ export class WorkforceManagerWorkflow implements Workflow {
     await ctx.repositories.tasks.updateStatus(task.id, "in_progress");
     await ctx.repositories.taskEvents.record(task.id, "in_progress");
 
-    const payload = task.payload as unknown as ReleasePayload;
+    const source = resolveContentSource(task);
 
     const batch = await ctx.repositories.contentBatches.create({
       taskRunId: ctx.taskRunId,
-      repositoryId: payload.repositoryId,
-      releaseTag: payload.releaseTag,
-      releaseTitle: payload.releaseTitle,
-      releaseBody: payload.releaseBody,
+      repositoryId: source.repositoryId,
+      releaseTag: source.releaseTag,
+      releaseTitle: source.title,
+      releaseBody: source.body,
     });
 
     const agent = new MarketingContentWriterAgent();
     const result = await agent.run(
       {
         contentBatchId: batch.id,
-        releaseTitle: payload.releaseTitle,
-        releaseBody: payload.releaseBody,
+        releaseTitle: source.title,
+        releaseBody: source.body,
       },
       ctx,
     );
@@ -222,7 +222,35 @@ export class WorkforceManagerWorkflow implements Workflow {
 }
 
 function pickAgentFor(task: Task): string | null {
-  if (task.source === "github_release") return "marketing-content-writer";
+  // Research ideas are the second on-ramp into content, alongside releases —
+  // the whole point of Research Agent existing is to keep Marketing fed with
+  // something to write about even when nothing has shipped.
+  if (task.source === "github_release" || task.source === "research") return "marketing-content-writer";
   if (task.source === "support_ticket") return "support-agent";
   return null;
+}
+
+function resolveContentSource(task: Task): {
+  title: string;
+  body: string;
+  repositoryId?: string;
+  releaseTag: string;
+} {
+  if (task.source === "github_release") {
+    const payload = task.payload as unknown as ReleasePayload;
+    return {
+      title: payload.releaseTitle,
+      body: payload.releaseBody,
+      repositoryId: payload.repositoryId,
+      releaseTag: payload.releaseTag,
+    };
+  }
+
+  // Research-sourced: the task's own title/digest (task.description) is the
+  // material Marketing writes from — there's no separate release payload.
+  return {
+    title: task.title,
+    body: task.description ?? "",
+    releaseTag: task.id,
+  };
 }
