@@ -108,7 +108,7 @@ export type TaskStatus =
 
 export type TaskSeverity = "minor" | "medium" | "critical";
 export type TaskPriority = "low" | "medium" | "high";
-export type TaskSource = "github_release" | "github_issue" | "manual" | "support_ticket" | "research";
+export type TaskSource = "github_release" | "github_issue" | "manual" | "support_ticket" | "research" | "insight";
 export type TaskCreatedBy = "system" | "owner";
 
 export interface Task {

@@ -14,6 +14,7 @@ const SOURCE_LABEL: Record<TaskSource, string> = {
   manual: "manual",
   support_ticket: "tiket support",
   research: "ide riset",
+  insight: "rekomendasi insight",
 };
 
 /**
