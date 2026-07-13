@@ -2,10 +2,15 @@ name: AI Workforce Scheduler
 
 on:
   schedule:
-    # Every hour, all day UTC — the actual "is this a working hour in Asia/Jakarta"
-    # decision happens in code (isWithinWorkingHours), not here, because cron
-    # granularity/delay in GitHub Actions is not reliable enough to trust directly.
-    - cron: "0 * * * *"
+    # Every 15 minutes, all day UTC — the actual "is this a working hour in
+    # Asia/Jakarta" decision happens in code (isWithinWorkingHours), not here.
+    # GitHub's own schedule trigger is best-effort and frequently delayed or
+    # dropped entirely (worse for public/free-tier repos under load) — an
+    # hourly cron meant real gaps of several hours during the work day with
+    # zero successful runs. Running 4x as often doesn't fix GitHub's
+    # unreliability, but it means enough attempts land that a multi-hour gap
+    # becomes rare instead of routine.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       force_run:

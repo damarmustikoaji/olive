@@ -23,10 +23,17 @@ interface SupportTicketPayload {
 
 /**
  * The Manager never does the work itself — it only reads the backlog,
- * decides who's capable of a task, and hands it off. Each shift moves a
- * task exactly one stage forward (backlog -> assigned -> in_progress ->
- * ready_for_review/done), never all the way through in one run, so a crash
- * partway through never loses more than one stage of progress.
+ * decides who's capable of a task, and hands it off. A shift normally moves
+ * a task one stage forward (backlog -> assigned -> in_progress ->
+ * ready_for_review/done), but assignStage chains straight into executeStage
+ * within the same run when possible — GitHub's schedule trigger is
+ * unreliable enough (frequently delayed or dropped, especially for public/
+ * free-tier repos) that waiting for a second successful shift just to pick
+ * up "assigned" can mean hours of apparent inactivity for no real reason.
+ * A crash between the two still leaves the task at "assigned" for the next
+ * shift to pick up, so this doesn't weaken the crash-safety the original
+ * one-stage design was protecting — it only skips a *guaranteed-successful*
+ * wait for another shift.
  *
  * Two specialists exist today (marketing-content-writer, support-agent).
  * Adding another means a case in `pickAgentFor` and a branch in
@@ -61,7 +68,10 @@ export class WorkforceManagerWorkflow implements Workflow {
     if (!task) throw new Error(`task ${taskId} not found`);
 
     if (task.status === "backlog") {
-      await this.assignStage(task, ctx);
+      const assignedTask = await this.assignStage(task, ctx);
+      if (assignedTask) {
+        await this.executeStage(assignedTask, ctx);
+      }
       return;
     }
 
@@ -71,7 +81,8 @@ export class WorkforceManagerWorkflow implements Workflow {
     }
   }
 
-  private async assignStage(task: Task, ctx: ExecutionContext): Promise<void> {
+  /** Returns the updated task if it got assigned to a specialist, null if it's staying in backlog. */
+  private async assignStage(task: Task, ctx: ExecutionContext): Promise<Task | null> {
     // The Owner's own judgment on a manually-created task is never
     // second-guessed by the Manager's classifier.
     if (task.source !== "manual") {
@@ -94,11 +105,12 @@ export class WorkforceManagerWorkflow implements Workflow {
         taskId: task.id,
         source: task.source,
       });
-      return;
+      return null;
     }
 
     await ctx.repositories.tasks.assign(task.id, agentName);
     await ctx.repositories.taskEvents.record(task.id, "assigned", { assigneeAgent: agentName });
+    return { ...task, assigneeAgent: agentName, status: "assigned" };
   }
 
   private async executeStage(task: Task, ctx: ExecutionContext): Promise<void> {
