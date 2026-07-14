@@ -1,8 +1,7 @@
 import { repositories } from "@/lib/repositories";
 import { env } from "@/lib/env";
-import { createManualTask } from "./actions";
 import { AgentFilter } from "./agent-filter";
-import { DescriptionWithImage } from "./description-with-image";
+import { NewTaskForm } from "./new-task-form";
 import { DraggableBoard, type BoardColumnData } from "./draggable-board";
 import type { Task, TaskStatus } from "@ai-workforce/core";
 
@@ -73,59 +72,7 @@ export default async function BoardPage({
 
       <details className="rounded border border-neutral-800 p-4">
         <summary className="cursor-pointer text-sm font-medium">+ Buat Task Baru</summary>
-        <form action={createManualTask} className="mt-4 space-y-3">
-          <input
-            name="title"
-            placeholder="Judul task"
-            required
-            className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
-          />
-          {env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_UPLOAD_PRESET ? (
-            <DescriptionWithImage
-              cloudName={env.CLOUDINARY_CLOUD_NAME}
-              uploadPreset={env.CLOUDINARY_UPLOAD_PRESET}
-            />
-          ) : (
-            <textarea
-              name="description"
-              placeholder="Deskripsi (opsional)"
-              rows={3}
-              className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm"
-            />
-          )}
-          <div className="flex gap-4">
-            <label className="space-y-1 text-xs text-neutral-400">
-              Severity
-              <select
-                name="severity"
-                defaultValue="medium"
-                className="block rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100"
-              >
-                <option value="minor">Minor</option>
-                <option value="medium">Medium</option>
-                <option value="critical">Critical</option>
-              </select>
-            </label>
-            <label className="space-y-1 text-xs text-neutral-400">
-              Priority
-              <select
-                name="priority"
-                defaultValue="medium"
-                className="block rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="rounded bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-white"
-          >
-            Buat Task
-          </button>
-        </form>
+        <NewTaskForm cloudName={env.CLOUDINARY_CLOUD_NAME} uploadPreset={env.CLOUDINARY_UPLOAD_PRESET} />
       </details>
 
       <DraggableBoard columns={boardColumns} />
