@@ -19,6 +19,22 @@ export interface MediaInsights {
 }
 
 const BASE_URL = "https://graph.threads.net/v1.0";
+const MAX_TEXT_LENGTH = 500;
+
+/**
+ * The prompt tells the model to stay under 500 chars, but free-tier models
+ * don't reliably obey character-count instructions — this was silently
+ * failing every publish (and every retry) for any piece that overshot,
+ * with Meta returning a generic-looking 500 that hid the real "too long"
+ * validation error. This is the actual enforcement; the prompt limit is
+ * just a hint to reduce how often it's needed.
+ */
+function truncateForThreads(text: string): string {
+  if (text.length <= MAX_TEXT_LENGTH) return text;
+  const cut = text.slice(0, MAX_TEXT_LENGTH - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${lastSpace > 0 ? cut.slice(0, lastSpace) : cut}…`;
+}
 
 /**
  * Posts as a single, fixed account (@assertin.forge) using a long-lived
@@ -31,7 +47,7 @@ export class ThreadsClient {
   constructor(private readonly credentials: ThreadsCredentials) {}
 
   async postThread(text: string): Promise<PostThreadResult> {
-    const creationId = await this.createContainer(text);
+    const creationId = await this.createContainer(truncateForThreads(text));
     const mediaId = await this.publishContainer(creationId);
     const url = await this.getPermalink(mediaId);
     return { id: mediaId, url };
