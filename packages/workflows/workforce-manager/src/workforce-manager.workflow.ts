@@ -3,6 +3,17 @@ import { MarketingContentWriterAgent } from "@ai-workforce/agent-marketing-conte
 import { DraftTicketReplySkill } from "@ai-workforce/agent-support";
 import type { ThreadsClient } from "@ai-workforce/integration-threads";
 import { ClassifySeverityTaskSkill } from "./classify-severity.skill.js";
+import { AnalyzeImageSkill } from "./analyze-image.skill.js";
+
+/** Matches every markdown image link in a task description, e.g. ![alt](https://...). */
+const IMAGE_MARKDOWN_RE = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
+
+function extractImageUrls(description: string | null): string[] {
+  if (!description) return [];
+  return [...description.matchAll(IMAGE_MARKDOWN_RE)]
+    .map((m) => m[1])
+    .filter((url): url is string => url !== undefined);
+}
 
 interface TaskPayload {
   kind: "task";
@@ -193,10 +204,38 @@ export class WorkforceManagerWorkflow implements Workflow {
       return;
     }
 
+    if (task.assigneeAgent === "workforce-manager") {
+      await this.executeImageAnalysis(task, ctx);
+      return;
+    }
+
     ctx.logger.warn("assigned agent has no execution handler yet", {
       taskId: task.id,
       assigneeAgent: task.assigneeAgent,
     });
+  }
+
+  /** The Manager handling a manual task itself — vision analysis is a direct capability, not a delegated one. */
+  private async executeImageAnalysis(task: Task, ctx: ExecutionContext): Promise<void> {
+    await ctx.repositories.tasks.updateStatus(task.id, "in_progress");
+    await ctx.repositories.taskEvents.record(task.id, "in_progress");
+
+    const imageUrls = extractImageUrls(task.description);
+    const skill = new AnalyzeImageSkill();
+
+    for (const imageUrl of imageUrls) {
+      try {
+        const analysis = await skill.execute({ imageUrl, context: task.title }, ctx);
+        await ctx.repositories.taskEvents.record(task.id, "image_analyzed", { url: imageUrl, analysis });
+      } catch (err) {
+        ctx.logger.error("image analysis failed", { taskId: task.id, imageUrl, error: String(err) });
+        await ctx.repositories.taskEvents.record(task.id, "image_analysis_failed", { url: imageUrl, error: String(err) });
+      }
+    }
+
+    // Owner reviews the conclusion — this is analysis output, not a routine
+    // decision the Manager should auto-resolve on its own.
+    await ctx.repositories.tasks.updateStatus(task.id, "ready_for_review");
   }
 
   private async executeContentWriter(task: Task, ctx: ExecutionContext): Promise<void> {
@@ -308,6 +347,12 @@ function pickAgentFor(task: Task): string | null {
   // something to write about even when nothing has shipped.
   if (task.source === "github_release" || task.source === "research") return "marketing-content-writer";
   if (task.source === "support_ticket") return "support-agent";
+  // A manual task with no image is an arbitrary request no current
+  // specialist is built to interpret — better to leave it in backlog for
+  // the Owner than fabricate a generic "understand anything" handler.
+  // One with an image (e.g. "analisis screenshot ini") is concrete enough
+  // for the Manager to run vision analysis on directly.
+  if (task.source === "manual" && extractImageUrls(task.description).length > 0) return "workforce-manager";
   return null;
 }
 

@@ -102,6 +102,9 @@ importers:
       '@ai-workforce/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@ai-workforce/workflow-workforce-manager':
+        specifier: workspace:*
+        version: link:../../packages/workflows/workforce-manager
       '@supabase/ssr':
         specifier: ^0.5.2
         version: 0.5.2(@supabase/supabase-js@2.110.1)

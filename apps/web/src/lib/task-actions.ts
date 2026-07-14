@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { repositories } from "@/lib/repositories";
 import { buildWebExecutionContext } from "@/lib/build-web-context";
-import { AnalyzeImageSkill } from "@/lib/analyze-image.skill";
+import { AnalyzeImageSkill } from "@ai-workforce/workflow-workforce-manager";
 import { extractImageUrls } from "@/lib/task-image";
 
 export async function approveTask(taskId: string): Promise<void> {
