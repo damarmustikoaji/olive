@@ -96,7 +96,9 @@ export class ThreadsClient {
   async getMediaInsights(mediaId: string): Promise<MediaInsights> {
     return withRetry(async () => {
       const url = new URL(`${BASE_URL}/${mediaId}/insights`);
-      url.searchParams.set("metrics", "views,likes,replies,reposts,quotes");
+      // Threads Insights API takes "metric" (singular) — "metrics" is silently
+      // rejected as a missing required param, which is what was happening here.
+      url.searchParams.set("metric", "views,likes,replies,reposts,quotes");
       url.searchParams.set("access_token", this.credentials.accessToken);
 
       const response = await fetch(url);
