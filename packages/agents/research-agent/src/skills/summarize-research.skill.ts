@@ -3,6 +3,7 @@ import { AGENT_NAME } from "../types.js";
 
 export interface SummarizeResearchInput extends Record<string, unknown> {
   searchResultsText: string;
+  repoContextText: string;
 }
 
 export class SummarizeResearchSkill extends PromptDrivenSkill<SummarizeResearchInput, string> {

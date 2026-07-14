@@ -187,6 +187,9 @@ importers:
       '@ai-workforce/core':
         specifier: workspace:*
         version: link:../../core
+      '@ai-workforce/integration-github':
+        specifier: workspace:*
+        version: link:../../integrations/github
       '@ai-workforce/integration-tavily':
         specifier: workspace:*
         version: link:../../integrations/tavily
@@ -350,6 +353,9 @@ importers:
       '@ai-workforce/core':
         specifier: workspace:*
         version: link:../../core
+      '@ai-workforce/integration-github':
+        specifier: workspace:*
+        version: link:../../integrations/github
       '@ai-workforce/integration-tavily':
         specifier: workspace:*
         version: link:../../integrations/tavily

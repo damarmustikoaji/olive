@@ -44,9 +44,19 @@ export function registerWorkflows(config: Config): void {
     WorkflowRegistry.register(new InsightAgentWorkflow(threadsClient));
   }
   // Same pattern: no Tavily key means no search, so skip registering rather
-  // than fail every shift trying to call an API with no credentials.
+  // than fail every shift trying to call an API with no credentials. Reuses
+  // the same GitHub repo client/target as Code Investigator — the daily
+  // digest gets a shallow read of the actual codebase alongside external
+  // market research, not just market research in a vacuum.
   if (config.TAVILY_API_KEY) {
-    WorkflowRegistry.register(new ResearchAgentWorkflow(new TavilyClient(config.TAVILY_API_KEY)));
+    WorkflowRegistry.register(
+      new ResearchAgentWorkflow(
+        new TavilyClient(config.TAVILY_API_KEY),
+        githubRepoClient,
+        config.CODE_INVESTIGATOR_REPO_OWNER,
+        config.CODE_INVESTIGATOR_REPO_NAME,
+      ),
+    );
   }
   // WorkflowRegistry.register(new GithubIssueTaskSourceWorkflow(...));  <- future task sources
 }

@@ -5,5 +5,9 @@
     "rootDir": "src"
   },
   "include": ["src"],
-  "references": [{ "path": "../../core" }, { "path": "../../integrations/tavily" }]
+  "references": [
+    { "path": "../../core" },
+    { "path": "../../integrations/tavily" },
+    { "path": "../../integrations/github" }
+  ]
 }

@@ -1,6 +1,7 @@
 import type { ExecutionContext, Workflow, WorkUnit } from "@ai-workforce/core";
 import { ResearchAgent } from "@ai-workforce/agent-research";
 import type { TavilyClient } from "@ai-workforce/integration-tavily";
+import type { GithubRepoClient } from "@ai-workforce/integration-github";
 
 interface Payload {
   date: string;
@@ -15,7 +16,12 @@ interface Payload {
 export class ResearchAgentWorkflow implements Workflow {
   readonly name = "research-agent";
 
-  constructor(private readonly tavilyClient: TavilyClient) {}
+  constructor(
+    private readonly tavilyClient: TavilyClient,
+    private readonly githubClient?: GithubRepoClient,
+    private readonly repoOwner?: string,
+    private readonly repoName?: string,
+  ) {}
 
   async shouldRun(ctx: ExecutionContext): Promise<WorkUnit[]> {
     const today = ctx.now.toISOString().slice(0, 10);
@@ -32,7 +38,7 @@ export class ResearchAgentWorkflow implements Workflow {
   async execute(unit: WorkUnit, ctx: ExecutionContext): Promise<void> {
     const { date } = unit.payload as Payload;
 
-    const agent = new ResearchAgent(this.tavilyClient);
+    const agent = new ResearchAgent(this.tavilyClient, this.githubClient, this.repoOwner, this.repoName);
     const result = await agent.run({}, ctx);
 
     // Left in "backlog" deliberately — the Manager classifies severity and
