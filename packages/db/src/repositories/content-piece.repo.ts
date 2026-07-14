@@ -151,4 +151,17 @@ export class ContentPieceRepo implements IContentPieceRepo {
     if (error) throw new DatabaseError("listPublishedWithMediaId content_pieces failed", error);
     return (data as Row[]).map(toDomain);
   }
+
+  async listApprovedUnpublished(params: { platform: ContentPlatform; sinceCreatedAt: Date }): Promise<ContentPiece[]> {
+    const { data, error } = await this.client
+      .from("content_pieces")
+      .select("*")
+      .eq("platform", params.platform)
+      .not("reviewed_at", "is", null)
+      .is("published_at", null)
+      .gte("created_at", params.sinceCreatedAt.toISOString());
+
+    if (error) throw new DatabaseError("listApprovedUnpublished content_pieces failed", error);
+    return (data as Row[]).map(toDomain);
+  }
 }

@@ -120,6 +120,16 @@ export class WorkTaskRepo implements IWorkTaskRepo {
     return data ? toDomain(data as Row) : null;
   }
 
+  async findByContentBatchId(contentBatchId: string): Promise<Task | null> {
+    const { data, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .eq("content_batch_id", contentBatchId)
+      .maybeSingle();
+    if (error) throw new DatabaseError("findByContentBatchId task failed", error);
+    return data ? toDomain(data as Row) : null;
+  }
+
   async listByStatus(status: TaskStatus): Promise<Task[]> {
     const { data, error } = await this.client
       .from("tasks")

@@ -73,6 +73,8 @@ export interface ContentPieceRepo {
   listByBatch(contentBatchId: string): Promise<ContentPiece[]>;
   /** Pieces with a media id to fetch insights for — published, on a platform with an Insights API. */
   listPublishedWithMediaId(params: { platform: ContentPlatform; sincePublishedAt?: Date }): Promise<ContentPiece[]>;
+  /** Approved but never successfully published — candidates for a publish retry. */
+  listApprovedUnpublished(params: { platform: ContentPlatform; sinceCreatedAt: Date }): Promise<ContentPiece[]>;
 }
 
 export interface ContentInsightRepo {
@@ -133,6 +135,7 @@ export interface WorkTaskRepo {
     createdBy?: TaskCreatedBy;
   }): Promise<Task>;
   findById(id: string): Promise<Task | null>;
+  findByContentBatchId(contentBatchId: string): Promise<Task | null>;
   listByStatus(status: TaskStatus): Promise<Task[]>;
   listAll(limit?: number): Promise<Task[]>;
   assign(id: string, assigneeAgent: string): Promise<void>;

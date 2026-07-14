@@ -4,9 +4,21 @@ import { DraftTicketReplySkill } from "@ai-workforce/agent-support";
 import type { ThreadsClient } from "@ai-workforce/integration-threads";
 import { ClassifySeverityTaskSkill } from "./classify-severity.skill.js";
 
-interface Payload {
+interface TaskPayload {
+  kind: "task";
   taskId: string;
 }
+
+interface RetryPublishPayload {
+  kind: "retry_publish";
+  contentPieceId: string;
+  contentBatchId: string;
+  content: string;
+}
+
+type Payload = TaskPayload | RetryPublishPayload;
+
+const RETRY_PUBLISH_WINDOW_DAYS = 3;
 
 interface ReleasePayload {
   repositoryId: string;
@@ -53,19 +65,54 @@ export class WorkforceManagerWorkflow implements Workflow {
       ctx.repositories.tasks.listByStatus("assigned"),
     ]);
 
-    return [...backlog, ...assigned].map((task) => ({
+    const taskUnits: WorkUnit[] = [...backlog, ...assigned].map((task) => ({
       // Includes the status being acted on so each stage transition gets
       // its own idempotency record — the same task is revisited across
       // multiple shifts as it moves through the state machine.
       triggerRef: `${task.id}:${task.status}`,
-      payload: { taskId: task.id } satisfies Payload,
+      payload: { kind: "task", taskId: task.id } satisfies Payload,
+    }));
+
+    const retryUnits = this.threadsClient ? await this.buildRetryPublishUnits(ctx) : [];
+
+    return [...taskUnits, ...retryUnits];
+  }
+
+  private async buildRetryPublishUnits(ctx: ExecutionContext): Promise<WorkUnit[]> {
+    const sinceCreatedAt = new Date(ctx.now);
+    sinceCreatedAt.setDate(sinceCreatedAt.getDate() - RETRY_PUBLISH_WINDOW_DAYS);
+
+    const pieces = await ctx.repositories.contentPieces.listApprovedUnpublished({
+      platform: "threads",
+      sinceCreatedAt,
+    });
+
+    const today = ctx.now.toISOString().slice(0, 10);
+
+    return pieces.map((piece) => ({
+      // One retry attempt per piece per calendar day — frequent enough to
+      // recover quickly from a transient failure, not so frequent it hammers
+      // Meta's API for something that might be down for hours.
+      triggerRef: `retry-publish:${piece.id}:${today}`,
+      payload: {
+        kind: "retry_publish",
+        contentPieceId: piece.id,
+        contentBatchId: piece.contentBatchId,
+        content: piece.content,
+      } satisfies Payload,
     }));
   }
 
   async execute(unit: WorkUnit, ctx: ExecutionContext): Promise<void> {
-    const { taskId } = unit.payload as Payload;
-    const task = await ctx.repositories.tasks.findById(taskId);
-    if (!task) throw new Error(`task ${taskId} not found`);
+    const payload = unit.payload as Payload;
+
+    if (payload.kind === "retry_publish") {
+      await this.retryPublish(payload, ctx);
+      return;
+    }
+
+    const task = await ctx.repositories.tasks.findById(payload.taskId);
+    if (!task) throw new Error(`task ${payload.taskId} not found`);
 
     if (task.status === "backlog") {
       const assignedTask = await this.assignStage(task, ctx);
@@ -78,6 +125,28 @@ export class WorkforceManagerWorkflow implements Workflow {
     if (task.status === "assigned") {
       await this.executeStage(task, ctx);
       return;
+    }
+  }
+
+  private async retryPublish(payload: RetryPublishPayload, ctx: ExecutionContext): Promise<void> {
+    if (!this.threadsClient) return;
+
+    const task = await ctx.repositories.tasks.findByContentBatchId(payload.contentBatchId);
+
+    try {
+      const result = await this.threadsClient.postThread(payload.content);
+      await ctx.repositories.contentPieces.markPublished(payload.contentPieceId, result.url, result.id);
+      if (task) {
+        await ctx.repositories.taskEvents.record(task.id, "auto_published_to_threads", { url: result.url, retried: true });
+      }
+    } catch (err) {
+      if (task) {
+        await ctx.repositories.taskEvents.record(task.id, "auto_publish_retry_failed", { error: String(err) });
+      }
+      ctx.logger.warn("retried Threads publish failed again", {
+        contentPieceId: payload.contentPieceId,
+        error: String(err),
+      });
     }
   }
 
