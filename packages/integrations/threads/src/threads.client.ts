@@ -45,7 +45,9 @@ export class ThreadsClient {
       url.searchParams.set("access_token", this.credentials.accessToken);
 
       const response = await fetch(url, { method: "POST" });
-      if (response.status >= 500) throw new TransientHttpError("threads:create-container");
+      if (response.status >= 500) {
+        throw new TransientHttpError(`threads:create-container (${response.status}): ${await response.text()}`);
+      }
       if (!response.ok) {
         throw new Error(`Threads create container failed (${response.status}): ${await response.text()}`);
       }
@@ -62,7 +64,9 @@ export class ThreadsClient {
       url.searchParams.set("access_token", this.credentials.accessToken);
 
       const response = await fetch(url, { method: "POST" });
-      if (response.status >= 500) throw new TransientHttpError("threads:publish");
+      if (response.status >= 500) {
+        throw new TransientHttpError(`threads:publish (${response.status}): ${await response.text()}`);
+      }
       if (!response.ok) {
         throw new Error(`Threads publish failed (${response.status}): ${await response.text()}`);
       }
