@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { repositories } from "@/lib/repositories";
 import { buildWebExecutionContext } from "@/lib/build-web-context";
 import { AnalyzeImageSkill } from "@/lib/analyze-image.skill";
-import { extractImageUrl } from "@/lib/task-image";
+import { extractImageUrls } from "@/lib/task-image";
 
 export async function approveTask(taskId: string): Promise<void> {
   await repositories.tasks.updateStatus(taskId, "approved");
@@ -27,18 +27,32 @@ export async function markTaskDone(taskId: string): Promise<void> {
   revalidatePath("/board");
 }
 
-/** Owner-triggered only — never runs automatically. See AnalyzeImageSkill for why. */
+/**
+ * Owner-triggered only — never runs automatically. See AnalyzeImageSkill for
+ * why. Analyzes every image attached to the task, one AI call each (recorded
+ * as separate events, since a single "analyses" array would need its own
+ * timeline rendering — this reuses the existing long-text event display).
+ */
 export async function analyzeTaskImage(taskId: string): Promise<void> {
   const task = await repositories.tasks.findById(taskId);
   if (!task) throw new Error(`task ${taskId} not found`);
 
-  const imageUrl = extractImageUrl(task.description);
-  if (!imageUrl) throw new Error("Task ini tidak punya lampiran gambar");
+  const imageUrls = extractImageUrls(task.description);
+  if (imageUrls.length === 0) throw new Error("Task ini tidak punya lampiran gambar");
+
+  const existingEvents = await repositories.taskEvents.listByTask(taskId);
+  const alreadyAnalyzed = new Set(
+    existingEvents.filter((e) => e.event === "image_analyzed").map((e) => e.meta?.url as string | undefined),
+  );
+  const pendingUrls = imageUrls.filter((url) => !alreadyAnalyzed.has(url));
 
   const ctx = buildWebExecutionContext();
   const skill = new AnalyzeImageSkill();
-  const analysis = await skill.execute({ imageUrl, context: task.title }, ctx);
 
-  await repositories.taskEvents.record(taskId, "image_analyzed", { analysis });
+  for (const imageUrl of pendingUrls) {
+    const analysis = await skill.execute({ imageUrl, context: task.title }, ctx);
+    await repositories.taskEvents.record(taskId, "image_analyzed", { url: imageUrl, analysis });
+  }
+
   revalidatePath(`/tasks/${taskId}`);
 }

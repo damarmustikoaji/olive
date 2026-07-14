@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { repositories } from "@/lib/repositories";
 import { analyzeTaskImage, approveTask, markTaskDone, rejectTask } from "@/lib/task-actions";
-import { extractImageUrl } from "@/lib/task-image";
+import { extractImageUrls } from "@/lib/task-image";
 import { MarkdownContent } from "./markdown-content";
 
 export async function TaskDetailContent({ taskId }: { taskId: string }) {
@@ -10,8 +10,11 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
   if (!task) notFound();
 
   const events = await repositories.taskEvents.listByTask(taskId);
-  const hasImage = !!extractImageUrl(task.description);
-  const alreadyAnalyzed = events.some((e) => e.event === "image_analyzed");
+  const imageUrls = extractImageUrls(task.description);
+  const analyzedUrls = new Set(
+    events.filter((e) => e.event === "image_analyzed").map((e) => e.meta?.url as string | undefined),
+  );
+  const hasUnanalyzedImage = imageUrls.some((url) => !analyzedUrls.has(url));
 
   return (
     <div className="space-y-6">
@@ -33,7 +36,7 @@ export async function TaskDetailContent({ taskId }: { taskId: string }) {
         <Field label="Created by" value={task.createdBy} />
       </div>
 
-      {hasImage && !alreadyAnalyzed && (
+      {hasUnanalyzedImage && (
         <form action={analyzeTaskImage.bind(null, task.id)}>
           <button
             type="submit"
