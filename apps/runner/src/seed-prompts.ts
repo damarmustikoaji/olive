@@ -13,12 +13,18 @@ import {
  *
  * Free-tier model names on OpenRouter change over time — deliberately not
  * hardcoded here. Set SEED_MODEL before running, e.g.:
- *   SEED_MODEL="meta-llama/llama-3.3-70b-instruct:free" pnpm --filter @ai-workforce/runner run seed:prompts
+ *   SEED_MODEL="openai/gpt-oss-20b:free" pnpm --filter @ai-workforce/runner run seed:prompts
  *
  * The workforce-manager's "assign-task-decision" skill uses tool-calling
- * (completeWithTools) — SEED_MODEL must be a model that supports OpenAI-style
- * function calling, or that skill will fail at runtime even though seeding
- * itself succeeds.
+ * (completeWithTools) — SEED_MODEL must be a model that RELIABLY emits
+ * structured tool_calls, not just one that advertises `tools` in its
+ * supported_parameters. Verified in production: openai/gpt-oss-20b:free and
+ * nvidia/nemotron-3-super-120b-a12b:free both work correctly.
+ * meta-llama/llama-3.3-70b-instruct:free advertises tool support but in
+ * practice hallucinates a pseudo-XML `<function=...>` string instead of a
+ * real tool_calls response and fails — verify any new model choice with a
+ * real completeWithTools() call before relying on it, not just its listed
+ * capabilities.
  */
 const SEED_GROUPS = [
   { agentName: AGENT_NAME, seeds: MARKETING_CONTENT_WRITER_PROMPT_SEED },
@@ -57,7 +63,17 @@ async function main(): Promise<void> {
         fallback_models: seed.fallbackModels,
       });
 
-      if (versionError) throw versionError;
+      if (versionError) {
+        if (versionError.code === "23505") {
+          // version 1 already seeded for this skill in a prior run — this
+          // script is meant to be safe to re-run when adding a new skill
+          // without re-seeding (and clobbering the active version of)
+          // ones that already exist.
+          console.log(`skipped ${group.agentName}/${seed.skillName} — version 1 already seeded`);
+          continue;
+        }
+        throw versionError;
+      }
 
       console.log(`seeded prompt for ${group.agentName}/${seed.skillName}`);
     }
