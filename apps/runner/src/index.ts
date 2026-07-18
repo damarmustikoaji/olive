@@ -18,7 +18,20 @@ async function main(): Promise<void> {
   registerWorkflows(config);
 
   for (const workflow of WorkflowRegistry.all()) {
-    const units = await workflow.shouldRun(ctx);
+    let units;
+    try {
+      units = await workflow.shouldRun(ctx);
+    } catch (err) {
+      // A single workflow's shouldRun (e.g. a task source's upstream API
+      // call) must not take down every other workflow's run — each is
+      // independent, and one being unavailable this shift shouldn't block
+      // the Manager or anyone else from still processing their own work.
+      ctx.logger.error("workflow shouldRun failed, skipping this workflow for this run", {
+        workflow: workflow.name,
+        error: String(err),
+      });
+      continue;
+    }
 
     for (const unit of units) {
       const taskRun = await ctx.repositories.taskRuns.getOrCreate({
