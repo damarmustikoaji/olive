@@ -75,7 +75,7 @@ export default async function BoardPage({
         <NewTaskForm cloudName={env.CLOUDINARY_CLOUD_NAME} uploadPreset={env.CLOUDINARY_UPLOAD_PRESET} />
       </details>
 
-      <DraggableBoard columns={boardColumns} />
+      <DraggableBoard columns={boardColumns} agentFilter={agentFilter} />
     </div>
   );
 }

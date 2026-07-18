@@ -1,4 +1,10 @@
-import type { AiProvider, ChatCompletionRequest, ChatCompletionResult } from "@ai-workforce/core";
+import type {
+  AiProvider,
+  ChatCompletionRequest,
+  ChatCompletionResult,
+  ChatCompletionWithToolsRequest,
+  ChatCompletionWithToolsResult,
+} from "@ai-workforce/core";
 
 /**
  * Tries each provider in order, moving to the next only if the current one
@@ -28,5 +34,22 @@ export class CompositeAiProvider implements AiProvider {
     }
 
     throw lastError;
+  }
+
+  /** Delegates to the first underlying provider that implements tool-calling. */
+  async completeWithTools(request: ChatCompletionWithToolsRequest): Promise<ChatCompletionWithToolsResult> {
+    let lastError: unknown;
+
+    for (const provider of this.providers) {
+      if (!provider.completeWithTools) continue;
+      try {
+        return await provider.completeWithTools(request);
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
+    }
+
+    throw lastError ?? new Error("no configured AiProvider supports completeWithTools");
   }
 }

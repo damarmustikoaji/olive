@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { env } from "./env";
 
 interface CookieToSet {
@@ -33,10 +34,15 @@ export async function createAuthClient() {
   });
 }
 
-export async function getCurrentUser() {
+/**
+ * Wrapped in React's `cache()` so multiple calls within the same request's
+ * RSC render tree (layout + page + nested server actions) dedupe into a
+ * single Supabase Auth round-trip instead of one per call site.
+ */
+export const getCurrentUser = cache(async () => {
   const supabase = await createAuthClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});

@@ -4,6 +4,7 @@ import { DraftTicketReplySkill } from "@ai-workforce/agent-support";
 import type { ThreadsClient } from "@ai-workforce/integration-threads";
 import { ClassifySeverityTaskSkill } from "./classify-severity.skill.js";
 import { AnalyzeImageSkill } from "./analyze-image.skill.js";
+import { AssignTaskDecisionSkill, buildDecisionInput } from "./llm-decision.skill.js";
 
 /** Matches every markdown image link in a task description, e.g. ![alt](https://...). */
 const IMAGE_MARKDOWN_RE = /!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g;
@@ -59,14 +60,17 @@ interface SupportTicketPayload {
  * wait for another shift.
  *
  * Two specialists exist today (marketing-content-writer, support-agent).
- * Adding another means a case in `pickAgentFor` and a branch in
- * `executeStage`, not rewriting this workflow.
+ * Which one (if any) a task gets assigned to is now an LLM decision made via
+ * tool calls (see AssignTaskDecisionSkill / board-tools.ts), not a hardcoded
+ * switch — adding a specialist means adding it to the assign_task tool's
+ * agentName enum and the prompt's guidance, plus a branch in `executeStage`.
  */
 export class WorkforceManagerWorkflow implements Workflow {
   readonly name = "workforce-manager";
 
   private readonly classifySeveritySkill = new ClassifySeverityTaskSkill();
   private readonly draftTicketReplySkill = new DraftTicketReplySkill();
+  private readonly assignTaskDecisionSkill = new AssignTaskDecisionSkill();
 
   constructor(private readonly threadsClient?: ThreadsClient) {}
 
@@ -178,19 +182,18 @@ export class WorkforceManagerWorkflow implements Workflow {
       task = { ...task, severity: classification.severity };
     }
 
-    const agentName = pickAgentFor(task);
+    // The LLM decides what happens next via tool calls (assign_task /
+    // post_task_comment), replacing the old hardcoded pickAgentFor switch —
+    // its reasoning lands as a real task_events entry either way, instead of
+    // a silent logger.warn when no specialist fit.
+    const decision = await this.assignTaskDecisionSkill.execute(buildDecisionInput(task), ctx);
 
-    if (!agentName) {
-      ctx.logger.warn("no specialist agent available for task, leaving in backlog", {
-        taskId: task.id,
-        source: task.source,
-      });
+    const updated = await ctx.repositories.tasks.findById(task.id);
+    if (!updated || updated.status !== "assigned") {
+      ctx.logger.info("manager LLM left task in backlog", { taskId: task.id, summary: decision.summary });
       return null;
     }
-
-    await ctx.repositories.tasks.assign(task.id, agentName);
-    await ctx.repositories.taskEvents.record(task.id, "assigned", { assigneeAgent: agentName });
-    return { ...task, assigneeAgent: agentName, status: "assigned" };
+    return updated;
   }
 
   private async executeStage(task: Task, ctx: ExecutionContext): Promise<void> {
@@ -339,21 +342,6 @@ export class WorkforceManagerWorkflow implements Workflow {
     await ctx.repositories.taskEvents.record(task.id, "auto_approved_by_manager", { severity: task.severity });
     await ctx.repositories.tasks.updateStatus(task.id, "done");
   }
-}
-
-function pickAgentFor(task: Task): string | null {
-  // Research ideas are the second on-ramp into content, alongside releases —
-  // the whole point of Research Agent existing is to keep Marketing fed with
-  // something to write about even when nothing has shipped.
-  if (task.source === "github_release" || task.source === "research") return "marketing-content-writer";
-  if (task.source === "support_ticket") return "support-agent";
-  // A manual task with no image is an arbitrary request no current
-  // specialist is built to interpret — better to leave it in backlog for
-  // the Owner than fabricate a generic "understand anything" handler.
-  // One with an image (e.g. "analisis screenshot ini") is concrete enough
-  // for the Manager to run vision analysis on directly.
-  if (task.source === "manual" && extractImageUrls(task.description).length > 0) return "workforce-manager";
-  return null;
 }
 
 function resolveContentSource(task: Task): {

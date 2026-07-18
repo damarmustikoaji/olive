@@ -40,3 +40,13 @@ export async function moveTaskStatus(taskId: string, status: TaskStatus): Promis
   await repositories.taskEvents.record(taskId, "moved_by_owner", { from: task.status, to: status });
   revalidatePath("/board");
 }
+
+/**
+ * Fetches a single task via the service-role repository, for the Board's
+ * Realtime subscription to reconcile a card it doesn't yet have full data
+ * for (a brand-new task, or one whose full domain shape isn't derivable
+ * from a partial Realtime payload alone).
+ */
+export async function getTaskForBoard(taskId: string) {
+  return repositories.tasks.findById(taskId);
+}

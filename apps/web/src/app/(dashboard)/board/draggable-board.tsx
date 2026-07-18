@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import type { Task, TaskStatus } from "@ai-workforce/core";
-import { moveTaskStatus } from "./actions";
+import { getTaskForBoard, moveTaskStatus } from "./actions";
+import { createBrowserSupabaseClient } from "@/lib/supabase-browser";
 
 export interface BoardColumnData {
   /** The status a card dropped into this column gets moved to. */
@@ -31,13 +32,74 @@ const SEVERITY_BADGE: Record<string, string> = {
  * reconciled once the server action's revalidatePath brings fresh props
  * back down; a failed move just gets corrected on that next server render.
  */
-export function DraggableBoard({ columns: initialColumns }: { columns: BoardColumnData[] }) {
+export function DraggableBoard({
+  columns: initialColumns,
+  agentFilter,
+}: {
+  columns: BoardColumnData[];
+  /** Mirrors the board page's `?agent=` searchParam — used to skip Realtime
+   * updates for tasks outside the currently filtered view. */
+  agentFilter?: string;
+}) {
   const [columns, setColumns] = useState(initialColumns);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<TaskStatus | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => setColumns(initialColumns), [initialColumns]);
+
+  // Live updates: apps/runner writes task changes directly to Supabase from a
+  // separate process, so the server-rendered `initialColumns` prop above goes
+  // stale the moment an agent (or another tab) moves a card. This subscribes
+  // to Postgres changes on `workforce.tasks` and reconciles them into local
+  // state, so the board never needs a manual refresh to reflect real state.
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient();
+
+    async function upsertTask(taskId: string) {
+      const task = await getTaskForBoard(taskId);
+      applyTask(taskId, task, agentFilter);
+    }
+
+    const channel = supabase
+      .channel("board-tasks-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "workforce", table: "tasks" },
+        (payload) => {
+          const changed = (payload.new ?? payload.old) as { id?: string } | null;
+          const taskId = changed?.id;
+          if (!taskId) return;
+
+          if (payload.eventType === "DELETE") {
+            applyTask(taskId, null, agentFilter);
+            return;
+          }
+          void upsertTask(taskId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [agentFilter]);
+
+  function applyTask(taskId: string, task: Task | null, filter?: string) {
+    setColumns((prev) => {
+      const withoutTask = prev.map((col) => ({
+        ...col,
+        tasks: col.tasks.filter((t) => t.id !== taskId),
+      }));
+      if (!task) return withoutTask;
+      if (filter && task.assigneeAgent !== filter) return withoutTask;
+
+      const dropStatus: TaskStatus = task.status === "failed" ? ("rejected" as TaskStatus) : task.status;
+      return withoutTask.map((col) =>
+        col.dropStatus === dropStatus ? { ...col, tasks: [...col.tasks, task] } : col,
+      );
+    });
+  }
 
   function handleDrop(dropStatus: TaskStatus) {
     setDragOverStatus(null);

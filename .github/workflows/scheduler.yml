@@ -17,6 +17,14 @@ on:
         description: "Bypass the working-hours gate (manual testing only)"
         type: boolean
         default: false
+  # Fired by supabase/functions/task-dispatch whenever a task row lands in
+  # `backlog` or changes status, via the GitHub REST "create a repository
+  # dispatch event" endpoint. Lets the runner react within seconds instead
+  # of waiting up to 15 minutes for the next cron tick. Carries no payload —
+  # the runner re-scans the full backlog/assigned set every run regardless
+  # (same behavior as a cron tick), this is purely a "wake up now" signal.
+  repository_dispatch:
+    types: [task-changed]
 
 jobs:
   run:
